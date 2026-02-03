@@ -2,6 +2,7 @@ import { Wallet, TrendingUp, DollarSign, Users, Pencil, Save, X } from "lucide-r
 import { Layout } from "@/components/Layout";
 import { StatCard } from "@/components/StatCard";
 import { CashFlowTable } from "@/components/CashFlowTable";
+import { DashboardSkeleton } from "@/components/DashboardSkeleton";
 import { useDashboardConfig, useCashFlow, formatCurrency, useUpdateDashboardConfig } from "@/hooks/useFinancialData";
 import { useAuthContext } from "@/contexts/AuthContext";
 import { Card, CardContent } from "@/components/ui/card";
@@ -68,9 +69,7 @@ const Index = () => {
   return (
     <Layout>
       {isLoading ? (
-        <div className="flex items-center justify-center py-20">
-          <p className="text-muted-foreground">Carregando...</p>
-        </div>
+        <DashboardSkeleton />
       ) : (
         <>
           {/* Admin Edit Button */}
