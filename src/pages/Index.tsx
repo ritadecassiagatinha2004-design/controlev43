@@ -1,6 +1,5 @@
 import { Wallet, TrendingUp, DollarSign, Users, Pencil, Save, X } from "lucide-react";
-import { Header } from "@/components/Header";
-import { NavigationTabs } from "@/components/NavigationTabs";
+import { Layout } from "@/components/Layout";
 import { StatCard } from "@/components/StatCard";
 import { CashFlowTable } from "@/components/CashFlowTable";
 import { useDashboardConfig, useCashFlow, formatCurrency, useUpdateDashboardConfig } from "@/hooks/useFinancialData";
@@ -64,21 +63,16 @@ const Index = () => {
     }
   };
 
-  if (configLoading || cashFlowLoading) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <p className="text-muted-foreground">Carregando...</p>
-      </div>
-    );
-  }
+  const isLoading = configLoading || cashFlowLoading;
 
   return (
-    <div className="min-h-screen bg-background">
-      <div className="max-w-7xl mx-auto px-6">
-        <Header />
-        <NavigationTabs />
-        
-        <main className="py-8">
+    <Layout>
+      {isLoading ? (
+        <div className="flex items-center justify-center py-20">
+          <p className="text-muted-foreground">Carregando...</p>
+        </div>
+      ) : (
+        <>
           {/* Admin Edit Button */}
           {isAdmin && !editing && (
             <div className="mb-4 flex justify-end">
@@ -193,9 +187,9 @@ const Index = () => {
 
           {/* Cash Flow Table */}
           <CashFlowTable />
-        </main>
-      </div>
-    </div>
+        </>
+      )}
+    </Layout>
   );
 };
 

@@ -1,5 +1,4 @@
-import { Header } from "@/components/Header";
-import { NavigationTabs } from "@/components/NavigationTabs";
+import { Layout } from "@/components/Layout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useExpenses, formatCurrency, useAddExpense, useUpdateExpense, useDeleteExpense, months } from "@/hooks/useFinancialData";
 import { useAuthContext } from "@/contexts/AuthContext";
@@ -75,23 +74,16 @@ const Gastos = () => {
     }
   };
 
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <p className="text-muted-foreground">Carregando...</p>
-      </div>
-    );
-  }
-
   const monthsWithExpenses = Object.keys(expensesByMonth || {});
 
   return (
-    <div className="min-h-screen bg-background">
-      <div className="max-w-7xl mx-auto px-6">
-        <Header />
-        <NavigationTabs />
-        
-        <main className="py-8">
+    <Layout>
+      {isLoading ? (
+        <div className="flex items-center justify-center py-20">
+          <p className="text-muted-foreground">Carregando...</p>
+        </div>
+      ) : (
+        <>
           {/* Page Header */}
           <div className="flex items-start justify-between mb-8">
             <div>
@@ -267,9 +259,9 @@ const Gastos = () => {
               );
             })
           )}
-        </main>
-      </div>
-    </div>
+        </>
+      )}
+    </Layout>
   );
 };
 
