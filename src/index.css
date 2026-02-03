@@ -6,7 +6,7 @@
 
 @layer base {
   :root {
-    --background: 240 20% 98%;
+    --background: 0 0% 98%;
     --foreground: 240 10% 20%;
 
     --card: 0 0% 100%;
@@ -15,17 +15,17 @@
     --popover: 0 0% 100%;
     --popover-foreground: 240 10% 20%;
 
-    --primary: 258 65% 58%;
+    --primary: 258 65% 50%;
     --primary-foreground: 0 0% 100%;
 
     --secondary: 258 40% 96%;
-    --secondary-foreground: 258 65% 58%;
+    --secondary-foreground: 258 65% 50%;
 
     --muted: 240 10% 96%;
     --muted-foreground: 240 5% 50%;
 
     --accent: 258 40% 96%;
-    --accent-foreground: 258 65% 58%;
+    --accent-foreground: 258 65% 50%;
 
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
@@ -33,23 +33,23 @@
     --success: 142 70% 45%;
     --success-foreground: 0 0% 100%;
 
-    --warning: 38 92% 50%;
-    --warning-foreground: 0 0% 100%;
+    --warning: 45 93% 47%;
+    --warning-foreground: 0 0% 20%;
 
-    --border: 240 10% 92%;
-    --input: 240 10% 92%;
-    --ring: 258 65% 58%;
+    --border: 240 10% 90%;
+    --input: 240 10% 90%;
+    --ring: 258 65% 50%;
 
     --radius: 0.75rem;
 
-    --chart-purple: 258 65% 58%;
-    --chart-purple-light: 258 40% 96%;
-    --chart-green: 142 70% 45%;
-    --chart-green-light: 142 40% 96%;
-    --chart-orange: 38 92% 50%;
-    --chart-orange-light: 38 40% 96%;
-    --chart-blue: 210 80% 55%;
-    --chart-blue-light: 210 40% 96%;
+    --sidebar-background: 0 0% 98%;
+    --sidebar-foreground: 240 5.3% 26.1%;
+    --sidebar-primary: 240 5.9% 10%;
+    --sidebar-primary-foreground: 0 0% 98%;
+    --sidebar-accent: 240 4.8% 95.9%;
+    --sidebar-accent-foreground: 240 5.9% 10%;
+    --sidebar-border: 220 13% 91%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
   }
 
   .dark {
@@ -80,6 +80,15 @@
     --border: 240 10% 20%;
     --input: 240 10% 20%;
     --ring: 258 65% 60%;
+
+    --sidebar-background: 240 5.9% 10%;
+    --sidebar-foreground: 240 4.8% 95.9%;
+    --sidebar-primary: 224.3 76.3% 48%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 240 3.7% 15.9%;
+    --sidebar-accent-foreground: 240 4.8% 95.9%;
+    --sidebar-border: 240 3.7% 15.9%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
   }
 }
 
@@ -105,16 +114,16 @@
   
   .stat-card-icon-green {
     @apply text-green-600;
-    background-color: hsl(142 40% 96%);
+    background-color: hsl(142 40% 95%);
   }
   
   .stat-card-icon-orange {
     @apply text-orange-500;
-    background-color: hsl(38 40% 96%);
+    background-color: hsl(38 40% 95%);
   }
   
   .stat-card-icon-blue {
     @apply text-blue-600;
-    background-color: hsl(210 40% 96%);
+    background-color: hsl(210 40% 95%);
   }
 }
