@@ -1,45 +1,44 @@
-import { Home, DollarSign, TrendingDown, TrendingUp } from "lucide-react";
+import { Home, Users, TrendingDown, TrendingUp } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Link, useLocation } from "react-router-dom";
 
 interface Tab {
   id: string;
   label: string;
   icon: typeof Home;
+  path: string;
 }
 
 const tabs: Tab[] = [
-  { id: "inicio", label: "Início", icon: Home },
-  { id: "mensalidades", label: "Mensalidades", icon: DollarSign },
-  { id: "gastos", label: "Gastos", icon: TrendingDown },
-  { id: "entradas", label: "Entradas", icon: TrendingUp },
+  { id: "inicio", label: "Início", icon: Home, path: "/" },
+  { id: "mensalidades", label: "Mensalidades", icon: Users, path: "/mensalidades" },
+  { id: "gastos", label: "Gastos", icon: TrendingDown, path: "/gastos" },
+  { id: "entradas", label: "Entradas", icon: TrendingUp, path: "/entradas" },
 ];
 
-interface NavigationTabsProps {
-  activeTab: string;
-  onTabChange: (tabId: string) => void;
-}
-
-export function NavigationTabs({ activeTab, onTabChange }: NavigationTabsProps) {
+export function NavigationTabs() {
+  const location = useLocation();
+  
   return (
-    <nav className="flex items-center gap-1 bg-card rounded-xl p-1 shadow-sm w-fit">
+    <nav className="flex items-center gap-1 border-b border-border">
       {tabs.map((tab) => {
         const Icon = tab.icon;
-        const isActive = activeTab === tab.id;
+        const isActive = location.pathname === tab.path;
         
         return (
-          <button
+          <Link
             key={tab.id}
-            onClick={() => onTabChange(tab.id)}
+            to={tab.path}
             className={cn(
-              "flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium transition-all duration-200",
+              "flex items-center gap-2 px-4 py-3 text-sm font-medium transition-all duration-200 border-b-2 -mb-[1px]",
               isActive
-                ? "bg-primary text-primary-foreground shadow-md"
-                : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                ? "text-primary border-primary"
+                : "text-muted-foreground border-transparent hover:text-foreground hover:border-muted"
             )}
           >
             <Icon className="w-4 h-4" />
             <span>{tab.label}</span>
-          </button>
+          </Link>
         );
       })}
     </nav>
