@@ -3,20 +3,33 @@ import { Layout } from "@/components/Layout";
 import { StatCard } from "@/components/StatCard";
 import { CashFlowTable } from "@/components/CashFlowTable";
 import { DashboardSkeleton } from "@/components/DashboardSkeleton";
-import { useDashboardConfig, useCashFlow, formatCurrency, useUpdateDashboardConfig } from "@/hooks/useFinancialData";
+import { useDashboardConfig, useCashFlow, formatCurrency, useUpdateDashboardConfig, useIncome, months } from "@/hooks/useFinancialData";
 import { useAuthContext } from "@/contexts/AuthContext";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useToast } from "@/hooks/use-toast";
 
 const Index = () => {
   const { data: config, isLoading: configLoading } = useDashboardConfig();
   const { isLoading: cashFlowLoading } = useCashFlow();
+  const { data: incomeData, isLoading: incomeLoading } = useIncome(2026);
   const { isAdmin } = useAuthContext();
   const updateConfig = useUpdateDashboardConfig();
   const { toast } = useToast();
+
+  // Calcula o mês atual e o total de entradas desse mês
+  const currentMonthData = useMemo(() => {
+    const currentMonthIndex = new Date().getMonth();
+    const currentMonthName = months[currentMonthIndex];
+    
+    const totalIncome = incomeData
+      ?.filter(item => item.month === currentMonthName)
+      .reduce((sum, item) => sum + item.value, 0) || 0;
+    
+    return { monthName: currentMonthName, total: totalIncome };
+  }, [incomeData]);
   
   const [editing, setEditing] = useState(false);
   const [editData, setEditData] = useState({
@@ -64,7 +77,7 @@ const Index = () => {
     }
   };
 
-  const isLoading = configLoading || cashFlowLoading;
+  const isLoading = configLoading || cashFlowLoading || incomeLoading;
 
   return (
     <Layout>
@@ -169,8 +182,8 @@ const Index = () => {
               iconVariant="purple"
             />
             <StatCard
-              title="Entrada Mensal"
-              value={formatCurrency(config?.entrada_mensal_value || 0)}
+              title={`Entrada Mensal (${currentMonthData.monthName})`}
+              value={formatCurrency(currentMonthData.total)}
               subtitle="Total do mês atual"
               icon={DollarSign}
               iconVariant="green"
