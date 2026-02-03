@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { User, Session } from "@supabase/supabase-js";
 import { useQueryClient } from "@tanstack/react-query";
@@ -9,18 +9,49 @@ export function useAuth() {
   const [isLoading, setIsLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
   const queryClient = useQueryClient();
+  const isCheckingRole = useRef(false);
+
+  const checkUserRole = useCallback(async (userId: string) => {
+    if (isCheckingRole.current) return;
+    isCheckingRole.current = true;
+    
+    try {
+      const { data } = await supabase.rpc('get_user_role');
+      setIsAdmin(data === 'admin');
+    } catch {
+      setIsAdmin(false);
+    } finally {
+      isCheckingRole.current = false;
+    }
+  }, []);
 
   useEffect(() => {
-    // Set up auth state listener BEFORE checking session
+    let mounted = true;
+
+    // Get initial session
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
+      if (!mounted) return;
+      
+      setSession(session);
+      setUser(session?.user ?? null);
+      
+      if (session?.user) {
+        await checkUserRole(session.user.id);
+      }
+      
+      setIsLoading(false);
+    });
+
+    // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
+        if (!mounted) return;
+        
         setSession(session);
         setUser(session?.user ?? null);
         
         if (session?.user) {
-          // Check if user is admin using the database function
-          const { data } = await supabase.rpc('get_user_role');
-          setIsAdmin(data === 'admin');
+          await checkUserRole(session.user.id);
         } else {
           setIsAdmin(false);
         }
@@ -29,23 +60,13 @@ export function useAuth() {
       }
     );
 
-    // Then check for existing session
-    supabase.auth.getSession().then(async ({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      
-      if (session?.user) {
-        const { data } = await supabase.rpc('get_user_role');
-        setIsAdmin(data === 'admin');
-      }
-      
-      setIsLoading(false);
-    });
+    return () => {
+      mounted = false;
+      subscription.unsubscribe();
+    };
+  }, [checkUserRole]);
 
-    return () => subscription.unsubscribe();
-  }, []);
-
-  const signIn = async (email: string, password: string) => {
+  const signIn = useCallback(async (email: string, password: string) => {
     const { data, error } = await supabase.auth.signInWithPassword({
       email,
       password,
@@ -53,14 +74,14 @@ export function useAuth() {
     
     if (error) throw error;
     return data;
-  };
+  }, []);
 
-  const signOut = async () => {
+  const signOut = useCallback(async () => {
     const { error } = await supabase.auth.signOut();
     if (error) throw error;
     setIsAdmin(false);
     queryClient.clear();
-  };
+  }, [queryClient]);
 
   return {
     user,

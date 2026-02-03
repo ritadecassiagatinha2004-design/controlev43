@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 
 export interface DashboardConfig {
   id: string;
@@ -48,11 +48,38 @@ export interface Income {
   value: number;
 }
 
+// Centralized realtime subscription hook - only subscribes once
+function useRealtimeSubscription(table: string, queryKey: string[]) {
+  const queryClient = useQueryClient();
+  const subscribedRef = useRef(false);
+
+  useEffect(() => {
+    if (subscribedRef.current) return;
+    subscribedRef.current = true;
+
+    const channel = supabase
+      .channel(`${table}_changes_${queryKey.join("_")}`)
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table },
+        () => {
+          queryClient.invalidateQueries({ queryKey });
+        }
+      )
+      .subscribe();
+
+    return () => {
+      subscribedRef.current = false;
+      supabase.removeChannel(channel);
+    };
+  }, [queryClient, table, queryKey.join("_")]);
+}
+
 // Dashboard Config Hook
 export function useDashboardConfig() {
-  const queryClient = useQueryClient();
+  useRealtimeSubscription("dashboard_config", ["dashboard_config"]);
   
-  const query = useQuery({
+  return useQuery({
     queryKey: ["dashboard_config"],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -62,27 +89,8 @@ export function useDashboardConfig() {
       if (error) throw error;
       return data as DashboardConfig | null;
     },
+    staleTime: 30000, // Cache for 30 seconds
   });
-
-  // Realtime subscription
-  useEffect(() => {
-    const channel = supabase
-      .channel("dashboard_config_changes")
-      .on(
-        "postgres_changes",
-        { event: "*", schema: "public", table: "dashboard_config" },
-        () => {
-          queryClient.invalidateQueries({ queryKey: ["dashboard_config"] });
-        }
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [queryClient]);
-
-  return query;
 }
 
 export function useUpdateDashboardConfig() {
@@ -105,9 +113,9 @@ export function useUpdateDashboardConfig() {
 
 // Cash Flow Hook
 export function useCashFlow() {
-  const queryClient = useQueryClient();
+  useRealtimeSubscription("cash_flow", ["cash_flow"]);
   
-  const query = useQuery({
+  return useQuery({
     queryKey: ["cash_flow"],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -117,26 +125,8 @@ export function useCashFlow() {
       if (error) throw error;
       return data as CashFlowItem[];
     },
+    staleTime: 30000,
   });
-
-  useEffect(() => {
-    const channel = supabase
-      .channel("cash_flow_changes")
-      .on(
-        "postgres_changes",
-        { event: "*", schema: "public", table: "cash_flow" },
-        () => {
-          queryClient.invalidateQueries({ queryKey: ["cash_flow"] });
-        }
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [queryClient]);
-
-  return query;
 }
 
 export function useUpdateCashFlow() {
@@ -192,9 +182,9 @@ export function useDeleteCashFlow() {
 
 // Members Hook
 export function useMembers() {
-  const queryClient = useQueryClient();
+  useRealtimeSubscription("members", ["members"]);
   
-  const query = useQuery({
+  return useQuery({
     queryKey: ["members"],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -204,33 +194,15 @@ export function useMembers() {
       if (error) throw error;
       return data as Member[];
     },
+    staleTime: 60000, // Members change less frequently
   });
-
-  useEffect(() => {
-    const channel = supabase
-      .channel("members_changes")
-      .on(
-        "postgres_changes",
-        { event: "*", schema: "public", table: "members" },
-        () => {
-          queryClient.invalidateQueries({ queryKey: ["members"] });
-        }
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [queryClient]);
-
-  return query;
 }
 
 // Payments Hook
 export function usePayments(year: number = 2026) {
-  const queryClient = useQueryClient();
+  useRealtimeSubscription("payments", ["payments", String(year)]);
   
-  const query = useQuery({
+  return useQuery({
     queryKey: ["payments", year],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -240,26 +212,8 @@ export function usePayments(year: number = 2026) {
       if (error) throw error;
       return data as Payment[];
     },
+    staleTime: 30000,
   });
-
-  useEffect(() => {
-    const channel = supabase
-      .channel("payments_changes")
-      .on(
-        "postgres_changes",
-        { event: "*", schema: "public", table: "payments" },
-        () => {
-          queryClient.invalidateQueries({ queryKey: ["payments"] });
-        }
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [queryClient]);
-
-  return query;
 }
 
 export function useUpdatePayment() {
@@ -281,9 +235,9 @@ export function useUpdatePayment() {
 
 // Expenses Hook
 export function useExpenses(year: number = 2026) {
-  const queryClient = useQueryClient();
+  useRealtimeSubscription("expenses", ["expenses", String(year)]);
   
-  const query = useQuery({
+  return useQuery({
     queryKey: ["expenses", year],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -294,26 +248,8 @@ export function useExpenses(year: number = 2026) {
       if (error) throw error;
       return data as Expense[];
     },
+    staleTime: 30000,
   });
-
-  useEffect(() => {
-    const channel = supabase
-      .channel("expenses_changes")
-      .on(
-        "postgres_changes",
-        { event: "*", schema: "public", table: "expenses" },
-        () => {
-          queryClient.invalidateQueries({ queryKey: ["expenses"] });
-        }
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [queryClient]);
-
-  return query;
 }
 
 export function useAddExpense() {
@@ -369,9 +305,9 @@ export function useDeleteExpense() {
 
 // Income Hook
 export function useIncome(year: number = 2026) {
-  const queryClient = useQueryClient();
+  useRealtimeSubscription("income", ["income", String(year)]);
   
-  const query = useQuery({
+  return useQuery({
     queryKey: ["income", year],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -382,26 +318,8 @@ export function useIncome(year: number = 2026) {
       if (error) throw error;
       return data as Income[];
     },
+    staleTime: 30000,
   });
-
-  useEffect(() => {
-    const channel = supabase
-      .channel("income_changes")
-      .on(
-        "postgres_changes",
-        { event: "*", schema: "public", table: "income" },
-        () => {
-          queryClient.invalidateQueries({ queryKey: ["income"] });
-        }
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [queryClient]);
-
-  return query;
 }
 
 export function useAddIncome() {
