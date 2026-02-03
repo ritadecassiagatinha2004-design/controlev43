@@ -1,5 +1,4 @@
-import { Header } from "@/components/Header";
-import { NavigationTabs } from "@/components/NavigationTabs";
+import { Layout } from "@/components/Layout";
 import { Card, CardContent } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useMembers, usePayments, useUpdatePayment, months } from "@/hooks/useFinancialData";
@@ -63,21 +62,16 @@ const Mensalidades = () => {
     }
   };
 
-  if (membersLoading || paymentsLoading) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <p className="text-muted-foreground">Carregando...</p>
-      </div>
-    );
-  }
+  const isLoading = membersLoading || paymentsLoading;
 
   return (
-    <div className="min-h-screen bg-background">
-      <div className="max-w-7xl mx-auto px-6">
-        <Header />
-        <NavigationTabs />
-        
-        <main className="py-8">
+    <Layout>
+      {isLoading ? (
+        <div className="flex items-center justify-center py-20">
+          <p className="text-muted-foreground">Carregando...</p>
+        </div>
+      ) : (
+        <>
           {/* Page Header */}
           <div className="flex items-start justify-between mb-8">
             <div>
@@ -151,9 +145,9 @@ const Mensalidades = () => {
               </div>
             </CardContent>
           </Card>
-        </main>
-      </div>
-    </div>
+        </>
+      )}
+    </Layout>
   );
 };
 
