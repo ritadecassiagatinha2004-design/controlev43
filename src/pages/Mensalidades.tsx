@@ -21,19 +21,38 @@ const Mensalidades = () => {
     return payment;
   };
 
-  const handleToggleStatus = async (memberId: string, month: string) => {
+  const handleSetPago = async (memberId: string, month: string) => {
     if (!isAdmin) return;
     
     const payment = getPaymentStatus(memberId, month);
-    if (!payment) return;
-    
-    const newStatus = payment.status === "Pago" ? "Pendente" : "Pago";
+    if (!payment || payment.status === "Pago") return;
     
     try {
-      await updatePayment.mutateAsync({ id: payment.id, status: newStatus });
+      await updatePayment.mutateAsync({ id: payment.id, status: "Pago" });
       toast({
         title: "Atualizado!",
-        description: `Status alterado para ${newStatus}`,
+        description: "Status alterado para Pago",
+      });
+    } catch (error) {
+      toast({
+        title: "Erro",
+        description: "Não foi possível atualizar o status",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleSetNaoPago = async (memberId: string, month: string) => {
+    if (!isAdmin) return;
+    
+    const payment = getPaymentStatus(memberId, month);
+    if (!payment || payment.status === "Pendente") return;
+    
+    try {
+      await updatePayment.mutateAsync({ id: payment.id, status: "Pendente" });
+      toast({
+        title: "Atualizado!",
+        description: "Status alterado para Não Pago",
       });
     } catch (error) {
       toast({
@@ -67,7 +86,7 @@ const Mensalidades = () => {
               </h2>
               <p className="text-muted-foreground">
                 Acompanhamento dos pagamentos dos filhos de casa
-                {isAdmin && <span className="text-primary ml-2">(Clique para alterar status)</span>}
+                {isAdmin && <span className="text-primary ml-2">(1 clique = Pago, 2 cliques = Não Pago)</span>}
               </p>
             </div>
             <Select defaultValue={String(selectedYear)}>
@@ -110,10 +129,11 @@ const Mensalidades = () => {
                           return (
                             <td key={month} className="py-3 px-2 text-center">
                               <button
-                                onClick={() => handleToggleStatus(member.id, month)}
+                                onClick={() => handleSetPago(member.id, month)}
+                                onDoubleClick={() => handleSetNaoPago(member.id, month)}
                                 disabled={!isAdmin || updatePayment.isPending}
                                 className={cn(
-                                  "inline-block px-3 py-1 rounded-md text-xs font-medium transition-all",
+                                  "inline-block px-3 py-1 rounded-md text-xs font-medium transition-all select-none",
                                   isPago
                                     ? "bg-green-500 text-white"
                                     : "bg-destructive text-destructive-foreground",
