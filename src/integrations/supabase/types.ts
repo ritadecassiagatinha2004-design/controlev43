@@ -14,7 +14,191 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      admin_settings: {
+        Row: {
+          admin_password: string
+          created_at: string
+          id: string
+        }
+        Insert: {
+          admin_password?: string
+          created_at?: string
+          id?: string
+        }
+        Update: {
+          admin_password?: string
+          created_at?: string
+          id?: string
+        }
+        Relationships: []
+      }
+      cash_flow: {
+        Row: {
+          created_at: string
+          display_order: number
+          id: string
+          month: string
+          value: number
+        }
+        Insert: {
+          created_at?: string
+          display_order?: number
+          id?: string
+          month: string
+          value?: number
+        }
+        Update: {
+          created_at?: string
+          display_order?: number
+          id?: string
+          month?: string
+          value?: number
+        }
+        Relationships: []
+      }
+      dashboard_config: {
+        Row: {
+          caixa_atual_month: string
+          caixa_atual_value: number
+          created_at: string
+          entrada_mensal_month: string
+          entrada_mensal_value: number
+          filhos_da_casa: number
+          id: string
+          investimento_value: number
+          updated_at: string
+        }
+        Insert: {
+          caixa_atual_month?: string
+          caixa_atual_value?: number
+          created_at?: string
+          entrada_mensal_month?: string
+          entrada_mensal_value?: number
+          filhos_da_casa?: number
+          id?: string
+          investimento_value?: number
+          updated_at?: string
+        }
+        Update: {
+          caixa_atual_month?: string
+          caixa_atual_value?: number
+          created_at?: string
+          entrada_mensal_month?: string
+          entrada_mensal_value?: number
+          filhos_da_casa?: number
+          id?: string
+          investimento_value?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      expenses: {
+        Row: {
+          created_at: string
+          description: string
+          id: string
+          month: string
+          value: number
+          year: number
+        }
+        Insert: {
+          created_at?: string
+          description: string
+          id?: string
+          month: string
+          value?: number
+          year?: number
+        }
+        Update: {
+          created_at?: string
+          description?: string
+          id?: string
+          month?: string
+          value?: number
+          year?: number
+        }
+        Relationships: []
+      }
+      income: {
+        Row: {
+          created_at: string
+          description: string
+          id: string
+          month: string
+          value: number
+          year: number
+        }
+        Insert: {
+          created_at?: string
+          description: string
+          id?: string
+          month: string
+          value?: number
+          year?: number
+        }
+        Update: {
+          created_at?: string
+          description?: string
+          id?: string
+          month?: string
+          value?: number
+          year?: number
+        }
+        Relationships: []
+      }
+      members: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+        }
+        Relationships: []
+      }
+      payments: {
+        Row: {
+          created_at: string
+          id: string
+          member_id: string
+          month: string
+          status: string
+          year: number
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          member_id: string
+          month: string
+          status?: string
+          year?: number
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          member_id?: string
+          month?: string
+          status?: string
+          year?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payments_member_id_fkey"
+            columns: ["member_id"]
+            isOneToOne: false
+            referencedRelation: "members"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
