@@ -86,7 +86,6 @@ const Mensalidades = () => {
               </h2>
               <p className="text-muted-foreground">
                 Acompanhamento dos pagamentos dos filhos de casa
-                {isAdmin && <span className="text-primary ml-2">(1 clique = Pago, 2 cliques = Não Pago)</span>}
               </p>
             </div>
             <Select defaultValue={String(selectedYear)}>
@@ -136,7 +135,7 @@ const Mensalidades = () => {
                                   "inline-block px-3 py-1 rounded-md text-xs font-medium transition-all select-none",
                                   isPago
                                     ? "bg-green-500 text-white"
-                                    : "bg-destructive text-destructive-foreground",
+                                    : "bg-muted text-muted-foreground",
                                   isAdmin && "cursor-pointer hover:opacity-80"
                                 )}
                               >
