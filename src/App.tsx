@@ -14,9 +14,10 @@ import NotFound from "./pages/NotFound";
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      staleTime: 30000, // 30 seconds
-      gcTime: 300000, // 5 minutes
+      staleTime: 60000, // 1 minute - reduce refetches
+      gcTime: 600000, // 10 minutes - keep data in cache longer
       refetchOnWindowFocus: false,
+      refetchOnMount: false, // Don't refetch if data exists
       retry: 1,
     },
   },
