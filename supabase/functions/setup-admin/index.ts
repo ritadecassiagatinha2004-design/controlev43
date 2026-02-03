@@ -24,7 +24,8 @@ Deno.serve(async (req) => {
     const { email, password, secretKey } = await req.json()
 
     // Verify secret key to prevent unauthorized admin creation
-    if (secretKey !== '88410205-setup-admin') {
+    const setupAdminSecret = Deno.env.get('SETUP_ADMIN_SECRET')
+    if (!setupAdminSecret || secretKey !== setupAdminSecret) {
       return new Response(
         JSON.stringify({ error: 'Unauthorized' }),
         { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
