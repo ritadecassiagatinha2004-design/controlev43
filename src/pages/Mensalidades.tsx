@@ -116,11 +116,11 @@ const Mensalidades = () => {
                                   "inline-block px-3 py-1 rounded-md text-xs font-medium transition-all",
                                   isPago
                                     ? "bg-green-500 text-white"
-                                    : "bg-muted text-muted-foreground",
+                                    : "bg-destructive text-destructive-foreground",
                                   isAdmin && "cursor-pointer hover:opacity-80"
                                 )}
                               >
-                                {payment?.status || "Pendente"}
+                                {isPago ? "Pago" : "Não Pago"}
                               </button>
                             </td>
                           );
