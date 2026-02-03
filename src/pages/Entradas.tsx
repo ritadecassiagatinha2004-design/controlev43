@@ -2,7 +2,7 @@ import { Header } from "@/components/Header";
 import { NavigationTabs } from "@/components/NavigationTabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useIncome, formatCurrency, useAddIncome, useUpdateIncome, useDeleteIncome, months } from "@/hooks/useFinancialData";
-import { useAdminStore } from "@/stores/adminStore";
+import { useAuthContext } from "@/contexts/AuthContext";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -16,7 +16,7 @@ const Entradas = () => {
   const addIncome = useAddIncome();
   const updateIncome = useUpdateIncome();
   const deleteIncome = useDeleteIncome();
-  const isAdmin = useAdminStore((state) => state.isAdmin);
+  const { isAdmin } = useAuthContext();
   const { toast } = useToast();
 
   const [editingId, setEditingId] = useState<string | null>(null);

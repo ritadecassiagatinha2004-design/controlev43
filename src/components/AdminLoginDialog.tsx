@@ -2,10 +2,10 @@ import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { useVerifyAdminPassword } from "@/hooks/useFinancialData";
-import { useAdminStore } from "@/stores/adminStore";
+import { useAuthContext } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
-import { Lock } from "lucide-react";
+import { Lock, Mail, KeyRound } from "lucide-react";
+import { Label } from "@/components/ui/label";
 
 interface AdminLoginDialogProps {
   open: boolean;
@@ -13,38 +13,35 @@ interface AdminLoginDialogProps {
 }
 
 export function AdminLoginDialog({ open, onOpenChange }: AdminLoginDialogProps) {
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const verifyPassword = useVerifyAdminPassword();
-  const setIsAdmin = useAdminStore((state) => state.setIsAdmin);
+  const [isLoading, setIsLoading] = useState(false);
+  const { signIn } = useAuthContext();
   const { toast } = useToast();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setIsLoading(true);
     
     try {
-      const isValid = await verifyPassword.mutateAsync(password);
-      
-      if (isValid) {
-        setIsAdmin(true);
-        onOpenChange(false);
-        setPassword("");
-        toast({
-          title: "Acesso autorizado",
-          description: "Você entrou na área de administração",
-        });
-      } else {
-        toast({
-          title: "Senha incorreta",
-          description: "Por favor, tente novamente",
-          variant: "destructive",
-        });
-      }
-    } catch (error) {
+      await signIn(email, password);
+      onOpenChange(false);
+      setEmail("");
+      setPassword("");
       toast({
-        title: "Erro",
-        description: "Não foi possível verificar a senha",
+        title: "Acesso autorizado",
+        description: "Você entrou na área de administração",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Erro de autenticação",
+        description: error.message === "Invalid login credentials" 
+          ? "Email ou senha incorretos" 
+          : "Não foi possível fazer login",
         variant: "destructive",
       });
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -58,21 +55,41 @@ export function AdminLoginDialog({ open, onOpenChange }: AdminLoginDialogProps) 
           </DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
+          <div className="space-y-2">
+            <Label htmlFor="email" className="flex items-center gap-2">
+              <Mail className="w-4 h-4" />
+              Email
+            </Label>
             <Input
+              id="email"
+              type="email"
+              placeholder="Digite seu email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              autoFocus
+              required
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="password" className="flex items-center gap-2">
+              <KeyRound className="w-4 h-4" />
+              Senha
+            </Label>
+            <Input
+              id="password"
               type="password"
-              placeholder="Digite a senha de administrador"
+              placeholder="Digite sua senha"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              autoFocus
+              required
             />
           </div>
           <div className="flex justify-end gap-2">
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
               Cancelar
             </Button>
-            <Button type="submit" disabled={verifyPassword.isPending}>
-              {verifyPassword.isPending ? "Verificando..." : "Entrar"}
+            <Button type="submit" disabled={isLoading}>
+              {isLoading ? "Entrando..." : "Entrar"}
             </Button>
           </div>
         </form>

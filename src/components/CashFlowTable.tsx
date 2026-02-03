@@ -1,6 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useCashFlow, formatCurrency, useUpdateCashFlow, useAddCashFlow, useDeleteCashFlow } from "@/hooks/useFinancialData";
-import { useAdminStore } from "@/stores/adminStore";
+import { useAuthContext } from "@/contexts/AuthContext";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -10,7 +10,7 @@ import { useToast } from "@/hooks/use-toast";
 
 export function CashFlowTable() {
   const { data: cashFlow, isLoading } = useCashFlow();
-  const isAdmin = useAdminStore((state) => state.isAdmin);
+  const { isAdmin } = useAuthContext();
   const updateCashFlow = useUpdateCashFlow();
   const addCashFlow = useAddCashFlow();
   const deleteCashFlow = useDeleteCashFlow();
