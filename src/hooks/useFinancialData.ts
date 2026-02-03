@@ -51,14 +51,15 @@ export interface Income {
 // Centralized realtime subscription hook - only subscribes once
 function useRealtimeSubscription(table: string, queryKey: string[]) {
   const queryClient = useQueryClient();
-  const subscribedRef = useRef(false);
+  const channelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
+  const queryKeyString = queryKey.join("_");
 
   useEffect(() => {
-    if (subscribedRef.current) return;
-    subscribedRef.current = true;
+    // Avoid duplicate subscriptions
+    if (channelRef.current) return;
 
     const channel = supabase
-      .channel(`${table}_changes_${queryKey.join("_")}`)
+      .channel(`${table}_changes_${queryKeyString}`)
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table },
@@ -68,11 +69,15 @@ function useRealtimeSubscription(table: string, queryKey: string[]) {
       )
       .subscribe();
 
+    channelRef.current = channel;
+
     return () => {
-      subscribedRef.current = false;
-      supabase.removeChannel(channel);
+      if (channelRef.current) {
+        supabase.removeChannel(channelRef.current);
+        channelRef.current = null;
+      }
     };
-  }, [queryClient, table, queryKey.join("_")]);
+  }, [queryClient, table, queryKeyString]);
 }
 
 // Dashboard Config Hook
@@ -89,7 +94,7 @@ export function useDashboardConfig() {
       if (error) throw error;
       return data as DashboardConfig | null;
     },
-    staleTime: 30000, // Cache for 30 seconds
+    staleTime: 60000, // Cache for 1 minute
   });
 }
 
@@ -125,7 +130,7 @@ export function useCashFlow() {
       if (error) throw error;
       return data as CashFlowItem[];
     },
-    staleTime: 30000,
+    staleTime: 60000,
   });
 }
 
@@ -194,7 +199,7 @@ export function useMembers() {
       if (error) throw error;
       return data as Member[];
     },
-    staleTime: 60000, // Members change less frequently
+    staleTime: 120000, // 2 minutes - Members change less frequently
   });
 }
 
@@ -212,7 +217,7 @@ export function usePayments(year: number = 2026) {
       if (error) throw error;
       return data as Payment[];
     },
-    staleTime: 30000,
+    staleTime: 60000,
   });
 }
 
@@ -248,7 +253,7 @@ export function useExpenses(year: number = 2026) {
       if (error) throw error;
       return data as Expense[];
     },
-    staleTime: 30000,
+    staleTime: 60000,
   });
 }
 
@@ -318,7 +323,7 @@ export function useIncome(year: number = 2026) {
       if (error) throw error;
       return data as Income[];
     },
-    staleTime: 30000,
+    staleTime: 60000,
   });
 }
 

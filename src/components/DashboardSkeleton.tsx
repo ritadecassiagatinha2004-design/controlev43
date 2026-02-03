@@ -1,9 +1,13 @@
 import { Skeleton } from "@/components/ui/skeleton";
 import { Card, CardContent } from "@/components/ui/card";
+import * as React from "react";
 
-export function StatCardSkeleton() {
+export const StatCardSkeleton = React.forwardRef<
+  HTMLDivElement,
+  React.HTMLAttributes<HTMLDivElement>
+>((props, ref) => {
   return (
-    <Card>
+    <Card ref={ref} {...props}>
       <CardContent className="p-6">
         <div className="flex items-center justify-between">
           <div className="space-y-2 flex-1">
@@ -16,11 +20,16 @@ export function StatCardSkeleton() {
       </CardContent>
     </Card>
   );
-}
+});
 
-export function CashFlowTableSkeleton() {
+StatCardSkeleton.displayName = "StatCardSkeleton";
+
+export const CashFlowTableSkeleton = React.forwardRef<
+  HTMLDivElement,
+  React.HTMLAttributes<HTMLDivElement>
+>((props, ref) => {
   return (
-    <Card>
+    <Card ref={ref} {...props}>
       <CardContent className="p-6">
         <Skeleton className="h-6 w-48 mb-4" />
         <div className="space-y-3">
@@ -34,7 +43,9 @@ export function CashFlowTableSkeleton() {
       </CardContent>
     </Card>
   );
-}
+});
+
+CashFlowTableSkeleton.displayName = "CashFlowTableSkeleton";
 
 export function DashboardSkeleton() {
   return (
