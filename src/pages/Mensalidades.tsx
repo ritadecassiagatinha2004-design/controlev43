@@ -140,7 +140,7 @@ const Mensalidades = () => {
                                   isAdmin && "cursor-pointer hover:opacity-80"
                                 )}
                               >
-                                {isPago ? "Pago" : "Não Pago"}
+                                {isPago ? "Pago" : "Pendente"}
                               </button>
                             </td>
                           );
