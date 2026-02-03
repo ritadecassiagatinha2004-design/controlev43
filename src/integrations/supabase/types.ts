@@ -14,24 +14,6 @@ export type Database = {
   }
   public: {
     Tables: {
-      admin_settings: {
-        Row: {
-          admin_password: string
-          created_at: string
-          id: string
-        }
-        Insert: {
-          admin_password?: string
-          created_at?: string
-          id?: string
-        }
-        Update: {
-          admin_password?: string
-          created_at?: string
-          id?: string
-        }
-        Relationships: []
-      }
       cash_flow: {
         Row: {
           created_at: string

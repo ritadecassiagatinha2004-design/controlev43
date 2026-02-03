@@ -373,21 +373,6 @@ export function useDeleteIncome() {
   });
 }
 
-// Admin Settings Hook
-export function useVerifyAdminPassword() {
-  return useMutation({
-    mutationFn: async (password: string) => {
-      const { data, error } = await supabase
-        .from("admin_settings")
-        .select("admin_password")
-        .maybeSingle();
-      if (error) throw error;
-      if (!data) throw new Error("Configuração de admin não encontrada");
-      return data.admin_password === password;
-    },
-  });
-}
-
 // Format currency helper
 export const formatCurrency = (value: number): string => {
   return value.toLocaleString("pt-BR", {
