@@ -4,7 +4,7 @@ import { NavigationTabs } from "@/components/NavigationTabs";
 import { StatCard } from "@/components/StatCard";
 import { CashFlowTable } from "@/components/CashFlowTable";
 import { useDashboardConfig, useCashFlow, formatCurrency, useUpdateDashboardConfig } from "@/hooks/useFinancialData";
-import { useAdminStore } from "@/stores/adminStore";
+import { useAuthContext } from "@/contexts/AuthContext";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -14,7 +14,7 @@ import { useToast } from "@/hooks/use-toast";
 const Index = () => {
   const { data: config, isLoading: configLoading } = useDashboardConfig();
   const { isLoading: cashFlowLoading } = useCashFlow();
-  const isAdmin = useAdminStore((state) => state.isAdmin);
+  const { isAdmin } = useAuthContext();
   const updateConfig = useUpdateDashboardConfig();
   const { toast } = useToast();
   

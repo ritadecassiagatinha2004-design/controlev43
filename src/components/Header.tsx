@@ -1,12 +1,12 @@
 import { useState } from "react";
 import { Settings, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useAdminStore } from "@/stores/adminStore";
+import { useAuthContext } from "@/contexts/AuthContext";
 import { AdminLoginDialog } from "@/components/AdminLoginDialog";
 
 export function Header() {
   const [loginOpen, setLoginOpen] = useState(false);
-  const { isAdmin, logout } = useAdminStore();
+  const { isAdmin, signOut, user } = useAuthContext();
   
   const today = new Date();
   const formattedDate = today.toLocaleDateString("pt-BR", {
@@ -14,6 +14,14 @@ export function Header() {
     month: "long",
     year: "numeric",
   });
+
+  const handleLogout = async () => {
+    try {
+      await signOut();
+    } catch (error) {
+      console.error("Erro ao sair:", error);
+    }
+  };
 
   return (
     <>
@@ -25,8 +33,8 @@ export function Header() {
         </div>
         <div className="flex items-center gap-4">
           <span className="text-sm text-primary font-medium">{formattedDate}</span>
-          {isAdmin ? (
-            <Button variant="outline" className="gap-2 text-destructive border-destructive hover:bg-destructive hover:text-destructive-foreground" onClick={logout}>
+          {isAdmin && user ? (
+            <Button variant="outline" className="gap-2 text-destructive border-destructive hover:bg-destructive hover:text-destructive-foreground" onClick={handleLogout}>
               <LogOut className="w-4 h-4" />
               Sair
             </Button>

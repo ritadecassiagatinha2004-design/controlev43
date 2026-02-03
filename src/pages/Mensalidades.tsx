@@ -3,7 +3,7 @@ import { NavigationTabs } from "@/components/NavigationTabs";
 import { Card, CardContent } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useMembers, usePayments, useUpdatePayment, months } from "@/hooks/useFinancialData";
-import { useAdminStore } from "@/stores/adminStore";
+import { useAuthContext } from "@/contexts/AuthContext";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
@@ -13,7 +13,7 @@ const Mensalidades = () => {
   const { data: members, isLoading: membersLoading } = useMembers();
   const { data: payments, isLoading: paymentsLoading } = usePayments(selectedYear);
   const updatePayment = useUpdatePayment();
-  const isAdmin = useAdminStore((state) => state.isAdmin);
+  const { isAdmin } = useAuthContext();
   const { toast } = useToast();
 
   const getPaymentStatus = (memberId: string, month: string) => {
