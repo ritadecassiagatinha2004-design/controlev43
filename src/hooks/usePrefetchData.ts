@@ -12,8 +12,8 @@ export function usePrefetchData() {
     if (prefetchedRef.current) return;
     prefetchedRef.current = true;
 
-    // Run all prefetches in parallel for faster loading
-    Promise.all([
+    // Use requestIdleCallback to not block initial render
+    const startPrefetch = () => Promise.all([
       queryClient.prefetchQuery({
         queryKey: ["dashboard_config"],
         queryFn: async () => {
@@ -94,5 +94,11 @@ export function usePrefetchData() {
         staleTime: 60000,
       }),
     ]);
+
+    if ('requestIdleCallback' in window) {
+      (window as any).requestIdleCallback(startPrefetch);
+    } else {
+      setTimeout(startPrefetch, 0);
+    }
   }, [queryClient]);
 }
