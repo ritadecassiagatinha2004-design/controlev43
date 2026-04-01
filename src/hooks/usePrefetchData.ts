@@ -94,5 +94,11 @@ export function usePrefetchData() {
         staleTime: 60000,
       }),
     ]);
+
+    if ('requestIdleCallback' in window) {
+      (window as any).requestIdleCallback(startPrefetch);
+    } else {
+      setTimeout(startPrefetch, 0);
+    }
   }, [queryClient]);
 }
