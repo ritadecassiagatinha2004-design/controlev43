@@ -28,18 +28,18 @@ export function useAuth() {
   useEffect(() => {
     let mounted = true;
 
-    // Get initial session
-    supabase.auth.getSession().then(async ({ data: { session } }) => {
+    // Get initial session - don't block on role check
+    supabase.auth.getSession().then(({ data: { session } }) => {
       if (!mounted) return;
       
       setSession(session);
       setUser(session?.user ?? null);
-      
-      if (session?.user) {
-        await checkUserRole(session.user.id);
-      }
-      
       setIsLoading(false);
+      
+      // Check role in background (non-blocking)
+      if (session?.user) {
+        checkUserRole(session.user.id);
+      }
     });
 
     // Listen for auth changes
