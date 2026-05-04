@@ -324,7 +324,7 @@ const Gastos = () => {
                               </>
                             ) : (
                               <>
-                                <td className="py-4 text-sm text-foreground">
+                                <td className="py-4 text-base text-foreground">
                                   {item.description}
                                 </td>
                                 <td className="py-4 text-right">
@@ -333,7 +333,7 @@ const Gastos = () => {
                                     onClick={() => isAdmin && handleCycleStatus(item)}
                                     disabled={!isAdmin}
                                     className={cn(
-                                      "px-3 py-1.5 rounded-md text-sm font-semibold transition-colors min-w-[110px] inline-flex items-center justify-center gap-2",
+                                      "px-4 py-2 rounded-md text-base font-semibold transition-colors min-w-[130px] inline-flex items-center justify-center gap-2",
                                       item.status === "Pago" && "bg-green-500 text-white hover:bg-green-600",
                                       item.status === "Deve" && "bg-red-500 text-white hover:bg-red-600",
                                       item.status === "Pendente" && "bg-muted text-muted-foreground hover:bg-muted/80",
