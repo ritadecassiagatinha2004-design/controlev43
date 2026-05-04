@@ -183,18 +183,32 @@ const Entradas = () => {
               const monthIncome = incomeByMonth?.[month] || [];
               const total = monthIncome.reduce((sum, i) => sum + i.value, 0);
               
+              const collapsed = isCollapsed(month);
               return (
                 <Card key={month} className="border shadow-sm mb-6">
                   <CardHeader className="pb-4">
-                    <div className="flex items-center justify-between">
-                      <CardTitle className="text-lg font-semibold text-foreground">
-                        {month}
-                      </CardTitle>
+                    <button
+                      type="button"
+                      onClick={() => toggleMonth(month)}
+                      className="w-full flex items-center justify-between gap-3 text-left hover:opacity-80 transition-opacity"
+                      aria-expanded={!collapsed}
+                    >
+                      <div className="flex items-center gap-2">
+                        {collapsed ? (
+                          <ChevronRight className="w-5 h-5 text-muted-foreground" />
+                        ) : (
+                          <ChevronDown className="w-5 h-5 text-muted-foreground" />
+                        )}
+                        <CardTitle className="text-lg font-semibold text-foreground">
+                          {month}
+                        </CardTitle>
+                      </div>
                       <span className="px-4 py-2 bg-green-100 text-black rounded-full text-sm font-semibold">
                         Total: {formatCurrency(total)}
                       </span>
-                    </div>
+                    </button>
                   </CardHeader>
+                  {!collapsed && (
                   <CardContent className="pt-0">
                     <table className="w-full">
                       <thead>
