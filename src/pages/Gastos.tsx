@@ -25,9 +25,7 @@ const Gastos = () => {
   const [adding, setAdding] = useState(false);
   const [addingMonth, setAddingMonth] = useState<string | null>(null);
   const [bulkMonth, setBulkMonth] = useState<string>("Janeiro");
-  const [bulkRows, setBulkRows] = useState<{ description: string; value: string }[]>([
-    { description: "", value: "" },
-  ]);
+  const [bulkText, setBulkText] = useState<string>("");
 
   // Group expenses by month
   const expensesByMonth = expenses?.reduce((acc, expense) => {
