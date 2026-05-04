@@ -55,6 +55,7 @@ const Gastos = () => {
         value: newData.value,
         month: addingMonth || newData.month,
         year: 2026,
+        status: "Pendente",
       });
       setAdding(false);
       setAddingMonth(null);
