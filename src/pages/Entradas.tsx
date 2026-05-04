@@ -6,8 +6,8 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Pencil, Plus, Trash2, Save, X } from "lucide-react";
-import { useState } from "react";
+import { Pencil, Plus, Trash2, Save, X, ChevronDown, ChevronRight } from "lucide-react";
+import { useState, useMemo } from "react";
 import { useToast } from "@/hooks/use-toast";
 
 const Entradas = () => {
@@ -72,7 +72,29 @@ const Entradas = () => {
     }
   };
 
-  const monthsWithIncome = Object.keys(incomeByMonth || {});
+  const MONTH_INDEX: Record<string, number> = {
+    Janeiro: 0, Fevereiro: 1, "Março": 2, Marco: 2, Abril: 3, Maio: 4, Junho: 5,
+    Julho: 6, Agosto: 7, Setembro: 8, Outubro: 9, Novembro: 10, Dezembro: 11,
+  };
+
+  const monthsWithIncome = useMemo(() => {
+    const list = Object.keys(incomeByMonth || {});
+    return list.sort((a, b) => (MONTH_INDEX[a] ?? 99) - (MONTH_INDEX[b] ?? 99));
+  }, [incomeByMonth]);
+
+  const currentMonthIdx = new Date().getMonth();
+  const isOpenByDefault = (month: string) => {
+    const idx = MONTH_INDEX[month] ?? 99;
+    return idx === currentMonthIdx || idx === currentMonthIdx - 1;
+  };
+
+  const [collapsedMonths, setCollapsedMonths] = useState<Record<string, boolean>>({});
+  const isCollapsed = (month: string) => {
+    if (collapsedMonths[month] !== undefined) return collapsedMonths[month];
+    return !isOpenByDefault(month);
+  };
+  const toggleMonth = (month: string) =>
+    setCollapsedMonths((prev) => ({ ...prev, [month]: !isCollapsed(month) }));
 
   return (
     <Layout>
@@ -161,18 +183,32 @@ const Entradas = () => {
               const monthIncome = incomeByMonth?.[month] || [];
               const total = monthIncome.reduce((sum, i) => sum + i.value, 0);
               
+              const collapsed = isCollapsed(month);
               return (
                 <Card key={month} className="border shadow-sm mb-6">
                   <CardHeader className="pb-4">
-                    <div className="flex items-center justify-between">
-                      <CardTitle className="text-lg font-semibold text-foreground">
-                        {month}
-                      </CardTitle>
+                    <button
+                      type="button"
+                      onClick={() => toggleMonth(month)}
+                      className="w-full flex items-center justify-between gap-3 text-left hover:opacity-80 transition-opacity"
+                      aria-expanded={!collapsed}
+                    >
+                      <div className="flex items-center gap-2">
+                        {collapsed ? (
+                          <ChevronRight className="w-5 h-5 text-muted-foreground" />
+                        ) : (
+                          <ChevronDown className="w-5 h-5 text-muted-foreground" />
+                        )}
+                        <CardTitle className="text-lg font-semibold text-foreground">
+                          {month}
+                        </CardTitle>
+                      </div>
                       <span className="px-4 py-2 bg-green-100 text-black rounded-full text-sm font-semibold">
                         Total: {formatCurrency(total)}
                       </span>
-                    </div>
+                    </button>
                   </CardHeader>
+                  {!collapsed && (
                   <CardContent className="pt-0">
                     <table className="w-full">
                       <thead>
@@ -253,6 +289,7 @@ const Entradas = () => {
                       </tbody>
                     </table>
                   </CardContent>
+                  )}
                 </Card>
               );
             })
