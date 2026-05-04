@@ -97,9 +97,22 @@
     @apply border-border;
   }
 
+  html {
+    /* Base font size: 17px on desktop, 16px on mobile.
+       Aumenta proporcionalmente todas as fontes do site (rem-based). */
+    font-size: 17px;
+  }
+
+  @media (max-width: 640px) {
+    html {
+      font-size: 16px;
+    }
+  }
+
   body {
     @apply bg-background text-foreground font-sans antialiased;
     font-family: 'Inter', sans-serif;
+    line-height: 1.6;
   }
 }
 
