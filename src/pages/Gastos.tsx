@@ -22,7 +22,10 @@ const Gastos = () => {
   const [editData, setEditData] = useState({ description: "", value: 0 });
   const [adding, setAdding] = useState(false);
   const [addingMonth, setAddingMonth] = useState<string | null>(null);
-  const [newData, setNewData] = useState({ description: "", value: 0, month: "Janeiro" });
+  const [bulkMonth, setBulkMonth] = useState<string>("Janeiro");
+  const [bulkRows, setBulkRows] = useState<{ description: string; value: string }[]>([
+    { description: "", value: "" },
+  ]);
 
   // Group expenses by month
   const expensesByMonth = expenses?.reduce((acc, expense) => {
@@ -48,19 +51,53 @@ const Gastos = () => {
     }
   };
 
-  const handleAdd = async () => {
+  const parseValue = (raw: string): number => {
+    if (!raw) return NaN;
+    // Aceita "44,90", "102 60", "200.00", "1.234,56"
+    const cleaned = raw.trim().replace(/\s+/g, ",").replace(/\./g, "").replace(",", ".");
+    const n = parseFloat(cleaned);
+    return isNaN(n) ? NaN : n;
+  };
+
+  const updateBulkRow = (idx: number, field: "description" | "value", val: string) => {
+    setBulkRows((rows) => rows.map((r, i) => (i === idx ? { ...r, [field]: val } : r)));
+  };
+
+  const addBulkRow = () => setBulkRows((r) => [...r, { description: "", value: "" }]);
+  const removeBulkRow = (idx: number) =>
+    setBulkRows((r) => (r.length > 1 ? r.filter((_, i) => i !== idx) : r));
+
+  const resetBulk = () => {
+    setAdding(false);
+    setAddingMonth(null);
+    setBulkRows([{ description: "", value: "" }]);
+  };
+
+  const handleAddBulk = async () => {
+    const month = addingMonth || bulkMonth;
+    const valid = bulkRows
+      .map((r) => ({ description: r.description.trim(), value: parseValue(r.value) }))
+      .filter((r) => r.description.length > 0 && !isNaN(r.value) && r.value > 0);
+
+    if (valid.length === 0) {
+      toast({ title: "Nada para salvar", description: "Preencha ao menos uma linha válida", variant: "destructive" });
+      return;
+    }
+
     try {
-      await addExpense.mutateAsync({
-        description: newData.description,
-        value: newData.value,
-        month: addingMonth || newData.month,
-        year: 2026,
-        status: "Pendente",
-      });
-      setAdding(false);
-      setAddingMonth(null);
-      setNewData({ description: "", value: 0, month: "Janeiro" });
-      toast({ title: "Adicionado!", description: "Novo gasto adicionado com sucesso" });
+      await Promise.all(
+        valid.map((r) =>
+          addExpense.mutateAsync({
+            description: r.description,
+            value: r.value,
+            month,
+            year: 2026,
+            status: "Pendente",
+          })
+        )
+      );
+      toast({ title: "Adicionados!", description: `${valid.length} gasto(s) salvo(s) em ${month}` });
+      resetBulk();
     } catch (error) {
       toast({ title: "Erro", description: "Não foi possível adicionar", variant: "destructive" });
     }
@@ -74,6 +111,7 @@ const Gastos = () => {
       toast({ title: "Erro", description: "Não foi possível remover", variant: "destructive" });
     }
   };
+
 
   const handleCycleStatus = async (item: { id: string; status: "Pendente" | "Pago" | "Deve" }) => {
     const next = item.status === "Pendente" ? "Pago" : item.status === "Pago" ? "Deve" : "Pendente";
