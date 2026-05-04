@@ -20,38 +20,20 @@ const Mensalidades = () => {
     return payment;
   };
 
-  const handleSetPago = async (memberId: string, month: string) => {
+  const handleCycleStatus = async (memberId: string, month: string) => {
     if (!isAdmin) return;
-    
-    const payment = getPaymentStatus(memberId, month);
-    if (!payment || payment.status === "Pago") return;
-    
-    try {
-      await updatePayment.mutateAsync({ id: payment.id, status: "Pago" });
-      toast({
-        title: "Atualizado!",
-        description: "Status alterado para Pago",
-      });
-    } catch (error) {
-      toast({
-        title: "Erro",
-        description: "Não foi possível atualizar o status",
-        variant: "destructive",
-      });
-    }
-  };
 
-  const handleSetNaoPago = async (memberId: string, month: string) => {
-    if (!isAdmin) return;
-    
     const payment = getPaymentStatus(memberId, month);
-    if (!payment || payment.status === "Pendente") return;
-    
+    if (!payment) return;
+
+    const nextStatus: "Pago" | "Pendente" | "Deve" =
+      payment.status === "Pendente" ? "Pago" : payment.status === "Pago" ? "Deve" : "Pendente";
+
     try {
-      await updatePayment.mutateAsync({ id: payment.id, status: "Pendente" });
+      await updatePayment.mutateAsync({ id: payment.id, status: nextStatus });
       toast({
         title: "Atualizado!",
-        description: "Status alterado para Não Pago",
+        description: `Status alterado para ${nextStatus}`,
       });
     } catch (error) {
       toast({
@@ -118,22 +100,21 @@ const Mensalidades = () => {
                         </td>
                         {months.map((month) => {
                           const payment = getPaymentStatus(member.id, month);
-                          const isPago = payment?.status === "Pago";
+                          const status = payment?.status ?? "Pendente";
                           return (
                             <td key={month} className="py-3 px-2 text-center">
                               <button
-                                onClick={() => handleSetPago(member.id, month)}
-                                onDoubleClick={() => handleSetNaoPago(member.id, month)}
+                                onClick={() => handleCycleStatus(member.id, month)}
                                 disabled={!isAdmin || updatePayment.isPending}
                                 className={cn(
                                   "inline-block px-3 py-1 rounded-md text-xs font-medium transition-all select-none",
-                                  isPago
-                                    ? "bg-green-500 text-white"
-                                    : "bg-muted text-muted-foreground",
+                                  status === "Pago" && "bg-green-500 text-white",
+                                  status === "Deve" && "bg-red-500 text-white",
+                                  status === "Pendente" && "bg-muted text-muted-foreground",
                                   isAdmin && "cursor-pointer hover:opacity-80"
                                 )}
                               >
-                                {isPago ? "Pago" : "Pendente"}
+                                {status}
                               </button>
                             </td>
                           );

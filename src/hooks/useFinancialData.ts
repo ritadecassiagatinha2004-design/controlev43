@@ -28,7 +28,7 @@ export interface Payment {
   id: string;
   member_id: string;
   month: string;
-  status: "Pago" | "Pendente";
+  status: "Pago" | "Pendente" | "Deve";
   year: number;
 }
 
@@ -225,7 +225,7 @@ export function useUpdatePayment() {
   const queryClient = useQueryClient();
   
   return useMutation({
-    mutationFn: async ({ id, status }: { id: string; status: "Pago" | "Pendente" }) => {
+    mutationFn: async ({ id, status }: { id: string; status: "Pago" | "Pendente" | "Deve" }) => {
       const { error } = await supabase
         .from("payments")
         .update({ status })
