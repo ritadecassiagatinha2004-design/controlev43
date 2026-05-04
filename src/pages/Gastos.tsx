@@ -22,7 +22,10 @@ const Gastos = () => {
   const [editData, setEditData] = useState({ description: "", value: 0 });
   const [adding, setAdding] = useState(false);
   const [addingMonth, setAddingMonth] = useState<string | null>(null);
-  const [newData, setNewData] = useState({ description: "", value: 0, month: "Janeiro" });
+  const [bulkMonth, setBulkMonth] = useState<string>("Janeiro");
+  const [bulkRows, setBulkRows] = useState<{ description: string; value: string }[]>([
+    { description: "", value: "" },
+  ]);
 
   // Group expenses by month
   const expensesByMonth = expenses?.reduce((acc, expense) => {
@@ -48,19 +51,53 @@ const Gastos = () => {
     }
   };
 
-  const handleAdd = async () => {
+  const parseValue = (raw: string): number => {
+    if (!raw) return NaN;
+    // Aceita "44,90", "102 60", "200.00", "1.234,56"
+    const cleaned = raw.trim().replace(/\s+/g, ",").replace(/\./g, "").replace(",", ".");
+    const n = parseFloat(cleaned);
+    return isNaN(n) ? NaN : n;
+  };
+
+  const updateBulkRow = (idx: number, field: "description" | "value", val: string) => {
+    setBulkRows((rows) => rows.map((r, i) => (i === idx ? { ...r, [field]: val } : r)));
+  };
+
+  const addBulkRow = () => setBulkRows((r) => [...r, { description: "", value: "" }]);
+  const removeBulkRow = (idx: number) =>
+    setBulkRows((r) => (r.length > 1 ? r.filter((_, i) => i !== idx) : r));
+
+  const resetBulk = () => {
+    setAdding(false);
+    setAddingMonth(null);
+    setBulkRows([{ description: "", value: "" }]);
+  };
+
+  const handleAddBulk = async () => {
+    const month = addingMonth || bulkMonth;
+    const valid = bulkRows
+      .map((r) => ({ description: r.description.trim(), value: parseValue(r.value) }))
+      .filter((r) => r.description.length > 0 && !isNaN(r.value) && r.value > 0);
+
+    if (valid.length === 0) {
+      toast({ title: "Nada para salvar", description: "Preencha ao menos uma linha válida", variant: "destructive" });
+      return;
+    }
+
     try {
-      await addExpense.mutateAsync({
-        description: newData.description,
-        value: newData.value,
-        month: addingMonth || newData.month,
-        year: 2026,
-        status: "Pendente",
-      });
-      setAdding(false);
-      setAddingMonth(null);
-      setNewData({ description: "", value: 0, month: "Janeiro" });
-      toast({ title: "Adicionado!", description: "Novo gasto adicionado com sucesso" });
+      await Promise.all(
+        valid.map((r) =>
+          addExpense.mutateAsync({
+            description: r.description,
+            value: r.value,
+            month,
+            year: 2026,
+            status: "Pendente",
+          })
+        )
+      );
+      toast({ title: "Adicionados!", description: `${valid.length} gasto(s) salvo(s) em ${month}` });
+      resetBulk();
     } catch (error) {
       toast({ title: "Erro", description: "Não foi possível adicionar", variant: "destructive" });
     }
@@ -74,6 +111,7 @@ const Gastos = () => {
       toast({ title: "Erro", description: "Não foi possível remover", variant: "destructive" });
     }
   };
+
 
   const handleCycleStatus = async (item: { id: string; status: "Pendente" | "Pago" | "Deve" }) => {
     const next = item.status === "Pendente" ? "Pago" : item.status === "Pago" ? "Deve" : "Pendente";
@@ -110,51 +148,75 @@ const Gastos = () => {
             )}
           </div>
 
-          {/* Add new expense form */}
-          {adding && !addingMonth && (
+          {/* Add new expenses form (bulk) */}
+          {adding && (
             <Card className="mb-6 border-primary">
               <CardContent className="p-6">
-                <h3 className="text-lg font-semibold mb-4">Adicionar Novo Gasto</h3>
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                  <div>
-                    <label className="text-sm text-muted-foreground">Mês</label>
-                    <Select value={newData.month} onValueChange={(v) => setNewData({ ...newData, month: v })}>
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {months.map((m) => (
-                          <SelectItem key={m} value={m}>{m}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div>
-                    <label className="text-sm text-muted-foreground">Descrição</label>
-                    <Input
-                      value={newData.description}
-                      onChange={(e) => setNewData({ ...newData, description: e.target.value })}
-                      placeholder="Descrição do gasto"
-                    />
-                  </div>
-                  <div>
-                    <label className="text-sm text-muted-foreground">Valor (R$)</label>
-                    <Input
-                      type="number"
-                      step="0.01"
-                      value={newData.value}
-                      onChange={(e) => setNewData({ ...newData, value: parseFloat(e.target.value) || 0 })}
-                    />
-                  </div>
+                <h3 className="text-lg font-semibold mb-4">Adicionar Gastos</h3>
+
+                <div className="mb-4 max-w-xs">
+                  <label className="text-sm text-muted-foreground">Mês</label>
+                  <Select value={bulkMonth} onValueChange={setBulkMonth} disabled={!!addingMonth}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {months.map((m) => (
+                        <SelectItem key={m} value={m}>{m}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  {addingMonth && (
+                    <p className="text-xs text-muted-foreground mt-1">Adicionando em <strong>{addingMonth}</strong></p>
+                  )}
                 </div>
-                <div className="flex justify-end gap-2 mt-4">
-                  <Button variant="outline" onClick={() => setAdding(false)}>
+
+                <div className="space-y-2">
+                  <div className="grid grid-cols-[1fr_160px_40px] gap-2 px-1">
+                    <span className="text-xs font-medium text-muted-foreground">Descrição</span>
+                    <span className="text-xs font-medium text-muted-foreground">Valor (R$)</span>
+                    <span />
+                  </div>
+                  {bulkRows.map((row, idx) => (
+                    <div key={idx} className="grid grid-cols-[1fr_160px_40px] gap-2 items-center">
+                      <Input
+                        value={row.description}
+                        onChange={(e) => updateBulkRow(idx, "description", e.target.value)}
+                        placeholder="Ex: Letícia"
+                        maxLength={120}
+                      />
+                      <Input
+                        value={row.value}
+                        onChange={(e) => updateBulkRow(idx, "value", e.target.value)}
+                        placeholder="44,90"
+                        inputMode="decimal"
+                      />
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        onClick={() => removeBulkRow(idx)}
+                        disabled={bulkRows.length === 1}
+                        aria-label="Remover linha"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+
+                <Button variant="outline" size="sm" className="mt-3" onClick={addBulkRow}>
+                  <Plus className="w-4 h-4 mr-2" />
+                  Adicionar linha
+                </Button>
+
+                <div className="flex justify-end gap-2 mt-6">
+                  <Button variant="outline" onClick={resetBulk}>
                     <X className="w-4 h-4 mr-2" />
                     Cancelar
                   </Button>
-                  <Button onClick={handleAdd}>
+                  <Button onClick={handleAddBulk} disabled={addExpense.isPending}>
                     <Save className="w-4 h-4 mr-2" />
-                    Salvar
+                    Salvar todos
                   </Button>
                 </div>
               </CardContent>
