@@ -401,6 +401,7 @@ const Gastos = () => {
                       </tbody>
                     </table>
                   </CardContent>
+                  )}
                 </Card>
               );
             })
