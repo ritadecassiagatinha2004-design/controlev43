@@ -118,6 +118,12 @@ export function useUpdateDashboardConfig() {
 }
 
 // Cash Flow Hook
+const MONTH_ORDER: Record<string, number> = {
+  "Janeiro": 1, "Fevereiro": 2, "Março": 3, "Marco": 3, "Abril": 4,
+  "Maio": 5, "Junho": 6, "Julho": 7, "Agosto": 8, "Setembro": 9,
+  "Outubro": 10, "Novembro": 11, "Dezembro": 12,
+};
+
 export function useCashFlow() {
   useRealtimeSubscription("cash_flow", ["cash_flow"]);
   
@@ -129,7 +135,12 @@ export function useCashFlow() {
         .select("*")
         .order("display_order", { ascending: true });
       if (error) throw error;
-      return data as CashFlowItem[];
+      const sorted = [...(data as CashFlowItem[])].sort((a, b) => {
+        const ai = MONTH_ORDER[a.month?.trim?.()] ?? 99;
+        const bi = MONTH_ORDER[b.month?.trim?.()] ?? 99;
+        return ai - bi;
+      });
+      return sorted;
     },
     staleTime: 60000,
   });
