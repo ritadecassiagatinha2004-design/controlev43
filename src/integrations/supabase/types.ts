@@ -80,6 +80,7 @@ export type Database = {
           description: string
           id: string
           month: string
+          status: string
           value: number
           year: number
         }
@@ -88,6 +89,7 @@ export type Database = {
           description: string
           id?: string
           month: string
+          status?: string
           value?: number
           year?: number
         }
@@ -96,6 +98,7 @@ export type Database = {
           description?: string
           id?: string
           month?: string
+          status?: string
           value?: number
           year?: number
         }
