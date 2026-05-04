@@ -6,6 +6,7 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Pencil, Plus, Trash2, Save, X } from "lucide-react";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
@@ -148,80 +149,80 @@ const Gastos = () => {
             )}
           </div>
 
-          {/* Add new expenses form (bulk) */}
-          {adding && (
-            <Card className="mb-6 border-primary">
-              <CardContent className="p-6">
-                <h3 className="text-lg font-semibold mb-4">Adicionar Gastos</h3>
+          {/* Add new expenses dialog (bulk) */}
+          <Dialog open={adding} onOpenChange={(open) => { if (!open) resetBulk(); }}>
+            <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+              <DialogHeader>
+                <DialogTitle>Adicionar Gastos</DialogTitle>
+              </DialogHeader>
 
-                <div className="mb-4 max-w-xs">
-                  <label className="text-sm text-muted-foreground">Mês</label>
-                  <Select value={bulkMonth} onValueChange={setBulkMonth} disabled={!!addingMonth}>
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {months.map((m) => (
-                        <SelectItem key={m} value={m}>{m}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  {addingMonth && (
-                    <p className="text-xs text-muted-foreground mt-1">Adicionando em <strong>{addingMonth}</strong></p>
-                  )}
+              <div className="mb-2 max-w-xs">
+                <label className="text-sm text-muted-foreground">Mês</label>
+                <Select value={bulkMonth} onValueChange={setBulkMonth} disabled={!!addingMonth}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {months.map((m) => (
+                      <SelectItem key={m} value={m}>{m}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                {addingMonth && (
+                  <p className="text-xs text-muted-foreground mt-1">Adicionando em <strong>{addingMonth}</strong></p>
+                )}
+              </div>
+
+              <div className="space-y-2">
+                <div className="grid grid-cols-[1fr_140px_40px] gap-2 px-1">
+                  <span className="text-xs font-medium text-muted-foreground">Descrição</span>
+                  <span className="text-xs font-medium text-muted-foreground">Valor (R$)</span>
+                  <span />
                 </div>
-
-                <div className="space-y-2">
-                  <div className="grid grid-cols-[1fr_160px_40px] gap-2 px-1">
-                    <span className="text-xs font-medium text-muted-foreground">Descrição</span>
-                    <span className="text-xs font-medium text-muted-foreground">Valor (R$)</span>
-                    <span />
+                {bulkRows.map((row, idx) => (
+                  <div key={idx} className="grid grid-cols-[1fr_140px_40px] gap-2 items-center">
+                    <Input
+                      value={row.description}
+                      onChange={(e) => updateBulkRow(idx, "description", e.target.value)}
+                      placeholder="Ex: Letícia"
+                      maxLength={120}
+                    />
+                    <Input
+                      value={row.value}
+                      onChange={(e) => updateBulkRow(idx, "value", e.target.value)}
+                      placeholder="44,90"
+                      inputMode="decimal"
+                    />
+                    <Button
+                      size="icon"
+                      variant="ghost"
+                      onClick={() => removeBulkRow(idx)}
+                      disabled={bulkRows.length === 1}
+                      aria-label="Remover linha"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </Button>
                   </div>
-                  {bulkRows.map((row, idx) => (
-                    <div key={idx} className="grid grid-cols-[1fr_160px_40px] gap-2 items-center">
-                      <Input
-                        value={row.description}
-                        onChange={(e) => updateBulkRow(idx, "description", e.target.value)}
-                        placeholder="Ex: Letícia"
-                        maxLength={120}
-                      />
-                      <Input
-                        value={row.value}
-                        onChange={(e) => updateBulkRow(idx, "value", e.target.value)}
-                        placeholder="44,90"
-                        inputMode="decimal"
-                      />
-                      <Button
-                        size="icon"
-                        variant="ghost"
-                        onClick={() => removeBulkRow(idx)}
-                        disabled={bulkRows.length === 1}
-                        aria-label="Remover linha"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </Button>
-                    </div>
-                  ))}
-                </div>
+                ))}
+              </div>
 
-                <Button variant="outline" size="sm" className="mt-3" onClick={addBulkRow}>
-                  <Plus className="w-4 h-4 mr-2" />
-                  Adicionar linha
+              <Button variant="outline" size="sm" className="mt-1 w-fit" onClick={addBulkRow}>
+                <Plus className="w-4 h-4 mr-2" />
+                Adicionar linha
+              </Button>
+
+              <DialogFooter className="mt-4">
+                <Button variant="outline" onClick={resetBulk}>
+                  <X className="w-4 h-4 mr-2" />
+                  Cancelar
                 </Button>
-
-                <div className="flex justify-end gap-2 mt-6">
-                  <Button variant="outline" onClick={resetBulk}>
-                    <X className="w-4 h-4 mr-2" />
-                    Cancelar
-                  </Button>
-                  <Button onClick={handleAddBulk} disabled={addExpense.isPending}>
-                    <Save className="w-4 h-4 mr-2" />
-                    Salvar todos
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          )}
+                <Button onClick={handleAddBulk} disabled={addExpense.isPending}>
+                  <Save className="w-4 h-4 mr-2" />
+                  Salvar todos
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
 
           {/* Expenses by Month */}
           {monthsWithExpenses.length === 0 ? (
