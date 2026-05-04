@@ -193,42 +193,44 @@ const Gastos = () => {
               </div>
 
               <div className="space-y-2">
-                <div className="grid grid-cols-[1fr_140px_40px] gap-2 px-1">
-                  <span className="text-xs font-medium text-muted-foreground">Descrição</span>
-                  <span className="text-xs font-medium text-muted-foreground">Valor (R$)</span>
-                  <span />
-                </div>
-                {bulkRows.map((row, idx) => (
-                  <div key={idx} className="grid grid-cols-[1fr_140px_40px] gap-2 items-center">
-                    <Input
-                      value={row.description}
-                      onChange={(e) => updateBulkRow(idx, "description", e.target.value)}
-                      placeholder="Ex: Letícia"
-                      maxLength={120}
-                    />
-                    <Input
-                      value={row.value}
-                      onChange={(e) => updateBulkRow(idx, "value", e.target.value)}
-                      placeholder="44,90"
-                      inputMode="decimal"
-                    />
-                    <Button
-                      size="icon"
-                      variant="ghost"
-                      onClick={() => removeBulkRow(idx)}
-                      disabled={bulkRows.length === 1}
-                      aria-label="Remover linha"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </Button>
-                  </div>
-                ))}
+                <label className="text-sm text-muted-foreground">
+                  Cole sua lista (uma linha por gasto: <span className="font-mono text-xs">nome valor</span>)
+                </label>
+                <Textarea
+                  value={bulkText}
+                  onChange={(e) => setBulkText(e.target.value)}
+                  placeholder={"Letícia 44,90\nAndressa 102,60\nJoão 200,00\nElaine 30,00"}
+                  rows={8}
+                  className="font-mono text-sm"
+                />
+                <p className="text-xs text-muted-foreground">
+                  Aceita formatos: <span className="font-mono">44,90</span>, <span className="font-mono">102 60</span>, <span className="font-mono">200.00</span>
+                </p>
               </div>
 
-              <Button variant="outline" size="sm" className="mt-1 w-fit" onClick={addBulkRow}>
-                <Plus className="w-4 h-4 mr-2" />
-                Adicionar linha
-              </Button>
+              {(parsedExpenses.length > 0 || skippedLines.length > 0) && (
+                <div className="rounded-md border bg-muted/30 p-3 space-y-2">
+                  <p className="text-sm font-medium">
+                    Pré-visualização: {parsedExpenses.length} gasto(s) reconhecido(s)
+                    {skippedLines.length > 0 && ` · ${skippedLines.length} linha(s) inválida(s)`}
+                  </p>
+                  {parsedExpenses.length > 0 && (
+                    <div className="space-y-1 max-h-40 overflow-y-auto">
+                      {parsedExpenses.map((p, i) => (
+                        <div key={i} className="flex justify-between text-sm">
+                          <span className="text-foreground">{p.description}</span>
+                          <span className="font-medium text-destructive">{formatCurrency(p.value)}</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                  {skippedLines.length > 0 && (
+                    <div className="text-xs text-destructive">
+                      Ignoradas: {skippedLines.map((l) => `"${l.trim()}"`).join(", ")}
+                    </div>
+                  )}
+                </div>
+              )}
 
               <DialogFooter className="mt-4">
                 <Button variant="outline" onClick={resetBulk}>
