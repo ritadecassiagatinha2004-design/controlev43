@@ -261,10 +261,10 @@ const Gastos = () => {
                 <Card key={month} className="border shadow-sm mb-6">
                   <CardHeader className="pb-4">
                     <div className="flex items-center justify-between">
-                      <CardTitle className="text-lg font-semibold text-foreground">
+                      <CardTitle className="text-xl font-semibold text-foreground">
                         {month}
                       </CardTitle>
-                      <span className="px-4 py-2 bg-warning/20 text-foreground rounded-full text-sm font-semibold">
+                      <span className="px-4 py-2 bg-warning/20 text-foreground rounded-full text-base font-semibold">
                         Total: {formatCurrency(total)}
                       </span>
                     </div>
@@ -273,14 +273,14 @@ const Gastos = () => {
                     <table className="w-full">
                       <thead>
                         <tr className="border-b border-border">
-                          <th className="text-left py-3 text-sm font-medium text-muted-foreground">
+                          <th className="text-left py-3 text-base font-medium text-muted-foreground">
                             Descrição
                           </th>
-                          <th className="text-right py-3 text-sm font-medium text-muted-foreground">
+                          <th className="text-right py-3 text-base font-medium text-muted-foreground">
                             Valor
                           </th>
                           {isAdmin && (
-                            <th className="text-right py-3 text-sm font-medium text-muted-foreground w-24">
+                            <th className="text-right py-3 text-base font-medium text-muted-foreground w-24">
                               Ações
                             </th>
                           )}
@@ -324,7 +324,7 @@ const Gastos = () => {
                               </>
                             ) : (
                               <>
-                                <td className="py-4 text-sm text-foreground">
+                                <td className="py-4 text-base text-foreground">
                                   {item.description}
                                 </td>
                                 <td className="py-4 text-right">
@@ -333,7 +333,7 @@ const Gastos = () => {
                                     onClick={() => isAdmin && handleCycleStatus(item)}
                                     disabled={!isAdmin}
                                     className={cn(
-                                      "px-3 py-1.5 rounded-md text-sm font-semibold transition-colors min-w-[110px] inline-flex items-center justify-center gap-2",
+                                      "px-4 py-2 rounded-md text-base font-semibold transition-colors min-w-[130px] inline-flex items-center justify-center gap-2",
                                       item.status === "Pago" && "bg-green-500 text-white hover:bg-green-600",
                                       item.status === "Deve" && "bg-red-500 text-white hover:bg-red-600",
                                       item.status === "Pendente" && "bg-muted text-muted-foreground hover:bg-muted/80",
