@@ -5,6 +5,7 @@ import { useAuthContext } from "@/contexts/AuthContext";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Pencil, Plus, Trash2, Save, X } from "lucide-react";
@@ -24,9 +25,7 @@ const Gastos = () => {
   const [adding, setAdding] = useState(false);
   const [addingMonth, setAddingMonth] = useState<string | null>(null);
   const [bulkMonth, setBulkMonth] = useState<string>("Janeiro");
-  const [bulkRows, setBulkRows] = useState<{ description: string; value: string }[]>([
-    { description: "", value: "" },
-  ]);
+  const [bulkText, setBulkText] = useState<string>("");
 
   // Group expenses by month
   const expensesByMonth = expenses?.reduce((acc, expense) => {
@@ -52,42 +51,62 @@ const Gastos = () => {
     }
   };
 
-  const parseValue = (raw: string): number => {
-    if (!raw) return NaN;
-    // Aceita "44,90", "102 60", "200.00", "1.234,56"
-    const cleaned = raw.trim().replace(/\s+/g, ",").replace(/\./g, "").replace(",", ".");
-    const n = parseFloat(cleaned);
-    return isNaN(n) ? NaN : n;
+  // Parse one line: "Letícia 44,90" / "Andressa   102 60" / "João 200.00"
+  // Strategy: take last token as the value (allowing spaces between cents),
+  // and treat everything before as description.
+  const parseLine = (raw: string): { description: string; value: number } | null => {
+    const line = raw.trim();
+    if (!line) return null;
+
+    // Match: <description> <value at end>
+    // Value: digits + optional decimal separator (',', '.', or space) + cents
+    const m = line.match(/^(.+?)\s+([\d.]+(?:[ ,.]\d{1,2})?)\s*$/);
+    if (!m) return null;
+
+    const description = m[1].trim().replace(/[:\-–—]\s*$/, "");
+    let valueStr = m[2].trim();
+
+    // Normalize: "102 60" -> "102,60"; "1.234,56" -> "1234.56"; "44,90" -> "44.90"
+    if (/\s/.test(valueStr)) {
+      valueStr = valueStr.replace(/\s+/, ",");
+    }
+    // If has both . and , -> . is thousands sep
+    if (valueStr.includes(",") && valueStr.includes(".")) {
+      valueStr = valueStr.replace(/\./g, "").replace(",", ".");
+    } else {
+      valueStr = valueStr.replace(",", ".");
+    }
+
+    const value = parseFloat(valueStr);
+    if (isNaN(value) || value <= 0 || !description) return null;
+    return { description, value };
   };
 
-  const updateBulkRow = (idx: number, field: "description" | "value", val: string) => {
-    setBulkRows((rows) => rows.map((r, i) => (i === idx ? { ...r, [field]: val } : r)));
-  };
+  const parsedExpenses = bulkText
+    .split(/\r?\n/)
+    .map((l) => parseLine(l))
+    .filter((x): x is { description: string; value: number } => x !== null);
 
-  const addBulkRow = () => setBulkRows((r) => [...r, { description: "", value: "" }]);
-  const removeBulkRow = (idx: number) =>
-    setBulkRows((r) => (r.length > 1 ? r.filter((_, i) => i !== idx) : r));
+  const skippedLines = bulkText
+    .split(/\r?\n/)
+    .filter((l) => l.trim().length > 0 && !parseLine(l));
 
   const resetBulk = () => {
     setAdding(false);
     setAddingMonth(null);
-    setBulkRows([{ description: "", value: "" }]);
+    setBulkText("");
   };
 
   const handleAddBulk = async () => {
     const month = addingMonth || bulkMonth;
-    const valid = bulkRows
-      .map((r) => ({ description: r.description.trim(), value: parseValue(r.value) }))
-      .filter((r) => r.description.length > 0 && !isNaN(r.value) && r.value > 0);
-
-    if (valid.length === 0) {
-      toast({ title: "Nada para salvar", description: "Preencha ao menos uma linha válida", variant: "destructive" });
+    if (parsedExpenses.length === 0) {
+      toast({ title: "Nada para salvar", description: "Cole pelo menos uma linha válida (ex: 'Letícia 44,90')", variant: "destructive" });
       return;
     }
 
     try {
       await Promise.all(
-        valid.map((r) =>
+        parsedExpenses.map((r) =>
           addExpense.mutateAsync({
             description: r.description,
             value: r.value,
@@ -97,7 +116,7 @@ const Gastos = () => {
           })
         )
       );
-      toast({ title: "Adicionados!", description: `${valid.length} gasto(s) salvo(s) em ${month}` });
+      toast({ title: "Adicionados!", description: `${parsedExpenses.length} gasto(s) salvo(s) em ${month}` });
       resetBulk();
     } catch (error) {
       toast({ title: "Erro", description: "Não foi possível adicionar", variant: "destructive" });
@@ -174,42 +193,44 @@ const Gastos = () => {
               </div>
 
               <div className="space-y-2">
-                <div className="grid grid-cols-[1fr_140px_40px] gap-2 px-1">
-                  <span className="text-xs font-medium text-muted-foreground">Descrição</span>
-                  <span className="text-xs font-medium text-muted-foreground">Valor (R$)</span>
-                  <span />
-                </div>
-                {bulkRows.map((row, idx) => (
-                  <div key={idx} className="grid grid-cols-[1fr_140px_40px] gap-2 items-center">
-                    <Input
-                      value={row.description}
-                      onChange={(e) => updateBulkRow(idx, "description", e.target.value)}
-                      placeholder="Ex: Letícia"
-                      maxLength={120}
-                    />
-                    <Input
-                      value={row.value}
-                      onChange={(e) => updateBulkRow(idx, "value", e.target.value)}
-                      placeholder="44,90"
-                      inputMode="decimal"
-                    />
-                    <Button
-                      size="icon"
-                      variant="ghost"
-                      onClick={() => removeBulkRow(idx)}
-                      disabled={bulkRows.length === 1}
-                      aria-label="Remover linha"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </Button>
-                  </div>
-                ))}
+                <label className="text-sm text-muted-foreground">
+                  Cole sua lista (uma linha por gasto: <span className="font-mono text-xs">nome valor</span>)
+                </label>
+                <Textarea
+                  value={bulkText}
+                  onChange={(e) => setBulkText(e.target.value)}
+                  placeholder={"Letícia 44,90\nAndressa 102,60\nJoão 200,00\nElaine 30,00"}
+                  rows={8}
+                  className="font-mono text-sm"
+                />
+                <p className="text-xs text-muted-foreground">
+                  Aceita formatos: <span className="font-mono">44,90</span>, <span className="font-mono">102 60</span>, <span className="font-mono">200.00</span>
+                </p>
               </div>
 
-              <Button variant="outline" size="sm" className="mt-1 w-fit" onClick={addBulkRow}>
-                <Plus className="w-4 h-4 mr-2" />
-                Adicionar linha
-              </Button>
+              {(parsedExpenses.length > 0 || skippedLines.length > 0) && (
+                <div className="rounded-md border bg-muted/30 p-3 space-y-2">
+                  <p className="text-sm font-medium">
+                    Pré-visualização: {parsedExpenses.length} gasto(s) reconhecido(s)
+                    {skippedLines.length > 0 && ` · ${skippedLines.length} linha(s) inválida(s)`}
+                  </p>
+                  {parsedExpenses.length > 0 && (
+                    <div className="space-y-1 max-h-40 overflow-y-auto">
+                      {parsedExpenses.map((p, i) => (
+                        <div key={i} className="flex justify-between text-sm">
+                          <span className="text-foreground">{p.description}</span>
+                          <span className="font-medium text-destructive">{formatCurrency(p.value)}</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                  {skippedLines.length > 0 && (
+                    <div className="text-xs text-destructive">
+                      Ignoradas: {skippedLines.map((l) => `"${l.trim()}"`).join(", ")}
+                    </div>
+                  )}
+                </div>
+              )}
 
               <DialogFooter className="mt-4">
                 <Button variant="outline" onClick={resetBulk}>
