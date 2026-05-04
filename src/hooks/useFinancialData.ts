@@ -38,6 +38,7 @@ export interface Expense {
   year: number;
   description: string;
   value: number;
+  status: "Pendente" | "Pago" | "Deve";
 }
 
 export interface Income {

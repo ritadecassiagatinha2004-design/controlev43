@@ -55,6 +55,7 @@ const Gastos = () => {
         value: newData.value,
         month: addingMonth || newData.month,
         year: 2026,
+        status: "Pendente",
       });
       setAdding(false);
       setAddingMonth(null);
@@ -71,6 +72,15 @@ const Gastos = () => {
       toast({ title: "Removido!", description: "Gasto removido com sucesso" });
     } catch (error) {
       toast({ title: "Erro", description: "Não foi possível remover", variant: "destructive" });
+    }
+  };
+
+  const handleCycleStatus = async (item: { id: string; status: "Pendente" | "Pago" | "Deve" }) => {
+    const next = item.status === "Pendente" ? "Pago" : item.status === "Pago" ? "Deve" : "Pendente";
+    try {
+      await updateExpense.mutateAsync({ id: item.id, status: next });
+    } catch {
+      toast({ title: "Erro", description: "Não foi possível atualizar status", variant: "destructive" });
     }
   };
 
@@ -233,8 +243,22 @@ const Gastos = () => {
                                 <td className="py-4 text-sm text-foreground">
                                   {item.description}
                                 </td>
-                                <td className="py-4 text-sm font-medium text-destructive text-right">
-                                  {formatCurrency(item.value)}
+                                <td className="py-4 text-right">
+                                  <button
+                                    type="button"
+                                    onClick={() => isAdmin && handleCycleStatus(item)}
+                                    disabled={!isAdmin}
+                                    className={cn(
+                                      "px-3 py-1.5 rounded-md text-sm font-semibold transition-colors min-w-[110px] inline-flex items-center justify-center gap-2",
+                                      item.status === "Pago" && "bg-green-500 text-white hover:bg-green-600",
+                                      item.status === "Deve" && "bg-red-500 text-white hover:bg-red-600",
+                                      item.status === "Pendente" && "bg-muted text-muted-foreground hover:bg-muted/80",
+                                      !isAdmin && "cursor-default opacity-90"
+                                    )}
+                                    title={isAdmin ? "Clique para alternar status" : undefined}
+                                  >
+                                    <span>{formatCurrency(item.value)}</span>
+                                  </button>
                                 </td>
                                 {isAdmin && (
                                   <td className="py-4 text-right">
