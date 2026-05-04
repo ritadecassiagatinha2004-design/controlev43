@@ -72,7 +72,29 @@ const Entradas = () => {
     }
   };
 
-  const monthsWithIncome = Object.keys(incomeByMonth || {});
+  const MONTH_INDEX: Record<string, number> = {
+    Janeiro: 0, Fevereiro: 1, "Março": 2, Marco: 2, Abril: 3, Maio: 4, Junho: 5,
+    Julho: 6, Agosto: 7, Setembro: 8, Outubro: 9, Novembro: 10, Dezembro: 11,
+  };
+
+  const monthsWithIncome = useMemo(() => {
+    const list = Object.keys(incomeByMonth || {});
+    return list.sort((a, b) => (MONTH_INDEX[a] ?? 99) - (MONTH_INDEX[b] ?? 99));
+  }, [incomeByMonth]);
+
+  const currentMonthIdx = new Date().getMonth();
+  const isOpenByDefault = (month: string) => {
+    const idx = MONTH_INDEX[month] ?? 99;
+    return idx === currentMonthIdx || idx === currentMonthIdx - 1;
+  };
+
+  const [collapsedMonths, setCollapsedMonths] = useState<Record<string, boolean>>({});
+  const isCollapsed = (month: string) => {
+    if (collapsedMonths[month] !== undefined) return collapsedMonths[month];
+    return !isOpenByDefault(month);
+  };
+  const toggleMonth = (month: string) =>
+    setCollapsedMonths((prev) => ({ ...prev, [month]: !isCollapsed(month) }));
 
   return (
     <Layout>
