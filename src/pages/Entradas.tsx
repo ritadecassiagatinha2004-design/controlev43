@@ -168,7 +168,7 @@ const Entradas = () => {
                       <CardTitle className="text-lg font-semibold text-foreground">
                         {month}
                       </CardTitle>
-                      <span className="px-4 py-2 bg-warning/20 text-foreground rounded-full text-sm font-semibold">
+                      <span className="px-4 py-2 bg-green-100 text-green-700 rounded-full text-sm font-semibold">
                         Total: {formatCurrency(total)}
                       </span>
                     </div>
