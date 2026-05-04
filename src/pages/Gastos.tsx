@@ -8,8 +8,8 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { Pencil, Plus, Trash2, Save, X } from "lucide-react";
-import { useState } from "react";
+import { Pencil, Plus, Trash2, Save, X, ChevronDown, ChevronRight } from "lucide-react";
+import { useState, useMemo } from "react";
 import { useToast } from "@/hooks/use-toast";
 
 const Gastos = () => {
@@ -142,7 +142,31 @@ const Gastos = () => {
     }
   };
 
-  const monthsWithExpenses = Object.keys(expensesByMonth || {});
+  const MONTH_INDEX: Record<string, number> = {
+    Janeiro: 0, Fevereiro: 1, "Março": 2, Marco: 2, Abril: 3, Maio: 4, Junho: 5,
+    Julho: 6, Agosto: 7, Setembro: 8, Outubro: 9, Novembro: 10, Dezembro: 11,
+  };
+
+  const monthsWithExpenses = useMemo(() => {
+    const list = Object.keys(expensesByMonth || {});
+    return list.sort((a, b) => (MONTH_INDEX[a] ?? 99) - (MONTH_INDEX[b] ?? 99));
+  }, [expensesByMonth]);
+
+  const currentMonthIdx = new Date().getMonth();
+  const isOpenByDefault = (month: string) => {
+    const idx = MONTH_INDEX[month] ?? 99;
+    // Mês atual e mês anterior ficam abertos
+    return idx === currentMonthIdx || idx === currentMonthIdx - 1;
+  };
+
+  const [collapsedMonths, setCollapsedMonths] = useState<Record<string, boolean>>({});
+  const isCollapsed = (month: string) => {
+    if (collapsedMonths[month] !== undefined) return collapsedMonths[month];
+    return !isOpenByDefault(month);
+  };
+  const toggleMonth = (month: string) =>
+    setCollapsedMonths((prev) => ({ ...prev, [month]: !isCollapsed(month) }));
+
 
   return (
     <Layout>
@@ -257,18 +281,32 @@ const Gastos = () => {
               const monthExpenses = expensesByMonth?.[month] || [];
               const total = monthExpenses.reduce((sum, e) => sum + e.value, 0);
               
+              const collapsed = isCollapsed(month);
               return (
                 <Card key={month} className="border shadow-sm mb-6">
                   <CardHeader className="pb-4">
-                    <div className="flex items-center justify-between">
-                      <CardTitle className="text-xl font-semibold text-foreground">
-                        {month}
-                      </CardTitle>
+                    <button
+                      type="button"
+                      onClick={() => toggleMonth(month)}
+                      className="w-full flex items-center justify-between gap-3 text-left hover:opacity-80 transition-opacity"
+                      aria-expanded={!collapsed}
+                    >
+                      <div className="flex items-center gap-2">
+                        {collapsed ? (
+                          <ChevronRight className="w-5 h-5 text-muted-foreground" />
+                        ) : (
+                          <ChevronDown className="w-5 h-5 text-muted-foreground" />
+                        )}
+                        <CardTitle className="text-xl font-semibold text-foreground">
+                          {month}
+                        </CardTitle>
+                      </div>
                       <span className="px-4 py-2 bg-warning/20 text-foreground rounded-full text-base font-semibold">
                         Total: {formatCurrency(total)}
                       </span>
-                    </div>
+                    </button>
                   </CardHeader>
+                  {!collapsed && (
                   <CardContent className="pt-0">
                     <table className="w-full">
                       <thead>
@@ -363,6 +401,7 @@ const Gastos = () => {
                       </tbody>
                     </table>
                   </CardContent>
+                  )}
                 </Card>
               );
             })
