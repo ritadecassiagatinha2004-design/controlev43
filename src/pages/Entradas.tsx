@@ -289,6 +289,7 @@ const Entradas = () => {
                       </tbody>
                     </table>
                   </CardContent>
+                  )}
                 </Card>
               );
             })
