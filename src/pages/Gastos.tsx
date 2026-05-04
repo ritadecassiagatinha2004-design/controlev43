@@ -301,7 +301,7 @@ const Gastos = () => {
                           {month}
                         </CardTitle>
                       </div>
-                      <span className="px-4 py-2 bg-warning/20 text-foreground rounded-full text-base font-semibold">
+                      <span className="px-4 py-2 bg-red-200 text-black rounded-full text-base font-semibold">
                         Total: {formatCurrency(total)}
                       </span>
                     </button>
