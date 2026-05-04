@@ -51,42 +51,62 @@ const Gastos = () => {
     }
   };
 
-  const parseValue = (raw: string): number => {
-    if (!raw) return NaN;
-    // Aceita "44,90", "102 60", "200.00", "1.234,56"
-    const cleaned = raw.trim().replace(/\s+/g, ",").replace(/\./g, "").replace(",", ".");
-    const n = parseFloat(cleaned);
-    return isNaN(n) ? NaN : n;
+  // Parse one line: "Letícia 44,90" / "Andressa   102 60" / "João 200.00"
+  // Strategy: take last token as the value (allowing spaces between cents),
+  // and treat everything before as description.
+  const parseLine = (raw: string): { description: string; value: number } | null => {
+    const line = raw.trim();
+    if (!line) return null;
+
+    // Match: <description> <value at end>
+    // Value: digits + optional decimal separator (',', '.', or space) + cents
+    const m = line.match(/^(.+?)\s+([\d.]+(?:[ ,.]\d{1,2})?)\s*$/);
+    if (!m) return null;
+
+    const description = m[1].trim().replace(/[:\-–—]\s*$/, "");
+    let valueStr = m[2].trim();
+
+    // Normalize: "102 60" -> "102,60"; "1.234,56" -> "1234.56"; "44,90" -> "44.90"
+    if (/\s/.test(valueStr)) {
+      valueStr = valueStr.replace(/\s+/, ",");
+    }
+    // If has both . and , -> . is thousands sep
+    if (valueStr.includes(",") && valueStr.includes(".")) {
+      valueStr = valueStr.replace(/\./g, "").replace(",", ".");
+    } else {
+      valueStr = valueStr.replace(",", ".");
+    }
+
+    const value = parseFloat(valueStr);
+    if (isNaN(value) || value <= 0 || !description) return null;
+    return { description, value };
   };
 
-  const updateBulkRow = (idx: number, field: "description" | "value", val: string) => {
-    setBulkRows((rows) => rows.map((r, i) => (i === idx ? { ...r, [field]: val } : r)));
-  };
+  const parsedExpenses = bulkText
+    .split(/\r?\n/)
+    .map((l) => parseLine(l))
+    .filter((x): x is { description: string; value: number } => x !== null);
 
-  const addBulkRow = () => setBulkRows((r) => [...r, { description: "", value: "" }]);
-  const removeBulkRow = (idx: number) =>
-    setBulkRows((r) => (r.length > 1 ? r.filter((_, i) => i !== idx) : r));
+  const skippedLines = bulkText
+    .split(/\r?\n/)
+    .filter((l) => l.trim().length > 0 && !parseLine(l));
 
   const resetBulk = () => {
     setAdding(false);
     setAddingMonth(null);
-    setBulkRows([{ description: "", value: "" }]);
+    setBulkText("");
   };
 
   const handleAddBulk = async () => {
     const month = addingMonth || bulkMonth;
-    const valid = bulkRows
-      .map((r) => ({ description: r.description.trim(), value: parseValue(r.value) }))
-      .filter((r) => r.description.length > 0 && !isNaN(r.value) && r.value > 0);
-
-    if (valid.length === 0) {
-      toast({ title: "Nada para salvar", description: "Preencha ao menos uma linha válida", variant: "destructive" });
+    if (parsedExpenses.length === 0) {
+      toast({ title: "Nada para salvar", description: "Cole pelo menos uma linha válida (ex: 'Letícia 44,90')", variant: "destructive" });
       return;
     }
 
     try {
       await Promise.all(
-        valid.map((r) =>
+        parsedExpenses.map((r) =>
           addExpense.mutateAsync({
             description: r.description,
             value: r.value,
@@ -96,7 +116,7 @@ const Gastos = () => {
           })
         )
       );
-      toast({ title: "Adicionados!", description: `${valid.length} gasto(s) salvo(s) em ${month}` });
+      toast({ title: "Adicionados!", description: `${parsedExpenses.length} gasto(s) salvo(s) em ${month}` });
       resetBulk();
     } catch (error) {
       toast({ title: "Erro", description: "Não foi possível adicionar", variant: "destructive" });
