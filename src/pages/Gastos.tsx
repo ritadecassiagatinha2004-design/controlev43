@@ -75,6 +75,15 @@ const Gastos = () => {
     }
   };
 
+  const handleCycleStatus = async (item: { id: string; status: "Pendente" | "Pago" | "Deve" }) => {
+    const next = item.status === "Pendente" ? "Pago" : item.status === "Pago" ? "Deve" : "Pendente";
+    try {
+      await updateExpense.mutateAsync({ id: item.id, status: next });
+    } catch {
+      toast({ title: "Erro", description: "Não foi possível atualizar status", variant: "destructive" });
+    }
+  };
+
   const monthsWithExpenses = Object.keys(expensesByMonth || {});
 
   return (
