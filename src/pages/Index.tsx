@@ -3,7 +3,7 @@ import { Layout } from "@/components/Layout";
 import { StatCard } from "@/components/StatCard";
 import { CashFlowTable } from "@/components/CashFlowTable";
 import { DashboardSkeleton } from "@/components/DashboardSkeleton";
-import { useDashboardConfig, useCashFlow, formatCurrency, useUpdateDashboardConfig, useIncome, months } from "@/hooks/useFinancialData";
+import { useDashboardConfig, useCashFlow, formatCurrency, useUpdateDashboardConfig } from "@/hooks/useFinancialData";
 import { useAuthContext } from "@/contexts/AuthContext";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
