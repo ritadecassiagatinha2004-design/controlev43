@@ -185,43 +185,43 @@ const Entradas = () => {
               
               const collapsed = isCollapsed(month);
               return (
-                <Card key={month} className="border shadow-sm mb-6">
-                  <CardHeader className="pb-4">
+                <Card key={month} className="border shadow-sm mb-4 sm:mb-6">
+                  <CardHeader className="p-4 sm:p-6 sm:pb-4">
                     <button
                       type="button"
                       onClick={() => toggleMonth(month)}
-                      className="w-full flex items-center justify-between gap-3 text-left hover:opacity-80 transition-opacity"
+                      className="w-full flex items-center justify-between gap-2 text-left hover:opacity-80 transition-opacity"
                       aria-expanded={!collapsed}
                     >
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-2 min-w-0">
                         {collapsed ? (
-                          <ChevronRight className="w-5 h-5 text-muted-foreground" />
+                          <ChevronRight className="w-5 h-5 text-muted-foreground shrink-0" />
                         ) : (
-                          <ChevronDown className="w-5 h-5 text-muted-foreground" />
+                          <ChevronDown className="w-5 h-5 text-muted-foreground shrink-0" />
                         )}
-                        <CardTitle className="text-lg font-semibold text-foreground">
+                        <CardTitle className="text-base sm:text-lg font-semibold text-foreground truncate">
                           {month}
                         </CardTitle>
                       </div>
-                      <span className="px-4 py-2 bg-green-100 text-black rounded-full text-sm font-semibold">
-                        Total: {formatCurrency(total)}
+                      <span className="px-3 py-1.5 sm:px-4 sm:py-2 bg-green-100 text-black rounded-full text-xs sm:text-sm font-semibold whitespace-nowrap shrink-0">
+                        {formatCurrency(total)}
                       </span>
                     </button>
                   </CardHeader>
                   {!collapsed && (
-                  <CardContent className="pt-0">
+                  <CardContent className="p-4 pt-0 sm:p-6 sm:pt-0">
                     <table className="w-full">
                       <thead>
                         <tr className="border-b border-border">
-                          <th className="text-left py-3 text-sm font-medium text-muted-foreground">
+                          <th className="text-left py-3 text-xs sm:text-sm font-medium text-muted-foreground">
                             Descrição
                           </th>
-                          <th className="text-right py-3 text-sm font-medium text-muted-foreground">
+                          <th className="text-right py-3 text-xs sm:text-sm font-medium text-muted-foreground">
                             Valor
                           </th>
                           {isAdmin && (
-                            <th className="text-right py-3 text-sm font-medium text-muted-foreground w-24">
-                              Ações
+                            <th className="text-right py-3 text-xs sm:text-sm font-medium text-muted-foreground w-16 sm:w-24">
+                              <span className="sr-only sm:not-sr-only">Ações</span>
                             </th>
                           )}
                         </tr>
@@ -236,22 +236,22 @@ const Entradas = () => {
                           >
                             {editingId === item.id ? (
                               <>
-                                <td className="py-4">
+                                <td className="py-3 pr-2">
                                   <Input
                                     value={editData.description}
                                     onChange={(e) => setEditData({ ...editData, description: e.target.value })}
                                   />
                                 </td>
-                                <td className="py-4 text-right">
+                                <td className="py-3 text-right">
                                   <Input
                                     type="number"
                                     step="0.01"
                                     value={editData.value}
                                     onChange={(e) => setEditData({ ...editData, value: parseFloat(e.target.value) || 0 })}
-                                    className="w-32 ml-auto"
+                                    className="w-24 sm:w-32 ml-auto"
                                   />
                                 </td>
-                                <td className="py-4 text-right">
+                                <td className="py-3 text-right">
                                   <div className="flex justify-end gap-1">
                                     <Button size="sm" onClick={() => handleSave(item.id)}>
                                       <Save className="w-4 h-4" />
@@ -264,19 +264,19 @@ const Entradas = () => {
                               </>
                             ) : (
                               <>
-                                <td className="py-4 text-sm text-foreground">
+                                <td className="py-3 pr-2 text-sm text-foreground break-words">
                                   {item.description}
                                 </td>
-                                <td className="py-4 text-sm font-medium text-green-600 text-right">
+                                <td className="py-3 text-sm font-medium text-green-600 text-right whitespace-nowrap">
                                   {formatCurrency(item.value)}
                                 </td>
                                 {isAdmin && (
-                                  <td className="py-4 text-right">
-                                    <div className="flex justify-end gap-1">
-                                      <Button size="sm" variant="ghost" onClick={() => handleEdit(item)}>
+                                  <td className="py-3 text-right">
+                                    <div className="flex justify-end gap-0.5 sm:gap-1">
+                                      <Button size="sm" variant="ghost" className="h-8 w-8 p-0" onClick={() => handleEdit(item)}>
                                         <Pencil className="w-4 h-4" />
                                       </Button>
-                                      <Button size="sm" variant="ghost" className="text-destructive" onClick={() => handleDelete(item.id)}>
+                                      <Button size="sm" variant="ghost" className="h-8 w-8 p-0 text-destructive" onClick={() => handleDelete(item.id)}>
                                         <Trash2 className="w-4 h-4" />
                                       </Button>
                                     </div>
