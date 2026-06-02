@@ -82,11 +82,11 @@ const Mensalidades = () => {
                 <table className="w-full">
                   <thead>
                     <tr className="border-b border-border">
-                      <th className="text-left py-4 px-4 text-sm font-medium text-muted-foreground bg-muted/30 sticky left-0">
+                      <th className="text-left py-3 px-3 sm:py-4 sm:px-4 text-xs sm:text-sm font-medium text-muted-foreground bg-muted/30 sticky left-0 z-10 shadow-[2px_0_4px_-2px_rgba(0,0,0,0.08)]">
                         Filhos(a)
                       </th>
                       {months.map((month) => (
-                        <th key={month} className="text-center py-4 px-2 text-sm font-medium text-muted-foreground bg-muted/30 min-w-[90px]">
+                        <th key={month} className="text-center py-3 px-2 sm:py-4 text-xs sm:text-sm font-medium text-muted-foreground bg-muted/30 min-w-[80px] sm:min-w-[90px]">
                           {month}
                         </th>
                       ))}
@@ -95,7 +95,7 @@ const Mensalidades = () => {
                   <tbody>
                     {members?.map((member, index) => (
                       <tr key={member.id} className={cn(index !== (members?.length || 0) - 1 && "border-b border-border")}>
-                        <td className="py-3 px-4 text-sm font-medium text-foreground sticky left-0 bg-card">
+                        <td className="py-3 px-3 sm:px-4 text-xs sm:text-sm font-medium text-foreground sticky left-0 z-10 bg-card shadow-[2px_0_4px_-2px_rgba(0,0,0,0.08)]">
                           {member.name}
                         </td>
                         {months.map((month) => {
