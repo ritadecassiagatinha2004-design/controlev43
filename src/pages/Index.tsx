@@ -1,4 +1,4 @@
-import { Wallet, TrendingUp, DollarSign, Users, Pencil, Save, X } from "lucide-react";
+import { Wallet, TrendingUp, Users, Pencil, Save, X } from "lucide-react";
 import { Layout } from "@/components/Layout";
 import { StatCard } from "@/components/StatCard";
 import { CashFlowTable } from "@/components/CashFlowTable";
