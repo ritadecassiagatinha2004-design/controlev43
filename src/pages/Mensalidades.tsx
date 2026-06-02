@@ -55,12 +55,12 @@ const Mensalidades = () => {
       ) : (
         <>
           {/* Page Header */}
-          <div className="flex items-start justify-between mb-8">
+          <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 mb-6 sm:mb-8">
             <div>
-              <h2 className="text-2xl font-bold text-primary mb-1">
+              <h2 className="text-xl sm:text-2xl font-bold text-primary mb-1">
                 Controle de Mensalidades
               </h2>
-              <p className="text-muted-foreground">
+              <p className="text-sm text-muted-foreground">
                 Acompanhamento dos pagamentos dos filhos de casa
               </p>
             </div>
@@ -82,11 +82,11 @@ const Mensalidades = () => {
                 <table className="w-full">
                   <thead>
                     <tr className="border-b border-border">
-                      <th className="text-left py-4 px-4 text-sm font-medium text-muted-foreground bg-muted/30 sticky left-0">
+                      <th className="text-left py-3 px-3 sm:py-4 sm:px-4 text-xs sm:text-sm font-medium text-muted-foreground bg-muted/30 sticky left-0 z-10 shadow-[2px_0_4px_-2px_rgba(0,0,0,0.08)]">
                         Filhos(a)
                       </th>
                       {months.map((month) => (
-                        <th key={month} className="text-center py-4 px-2 text-sm font-medium text-muted-foreground bg-muted/30 min-w-[90px]">
+                        <th key={month} className="text-center py-3 px-2 sm:py-4 text-xs sm:text-sm font-medium text-muted-foreground bg-muted/30 min-w-[80px] sm:min-w-[90px]">
                           {month}
                         </th>
                       ))}
@@ -95,7 +95,7 @@ const Mensalidades = () => {
                   <tbody>
                     {members?.map((member, index) => (
                       <tr key={member.id} className={cn(index !== (members?.length || 0) - 1 && "border-b border-border")}>
-                        <td className="py-3 px-4 text-sm font-medium text-foreground sticky left-0 bg-card">
+                        <td className="py-3 px-3 sm:px-4 text-xs sm:text-sm font-medium text-foreground sticky left-0 z-10 bg-card shadow-[2px_0_4px_-2px_rgba(0,0,0,0.08)]">
                           {member.name}
                         </td>
                         {months.map((month) => {

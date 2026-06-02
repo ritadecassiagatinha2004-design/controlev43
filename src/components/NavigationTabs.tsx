@@ -20,17 +20,17 @@ export function NavigationTabs() {
   const location = useLocation();
   
   return (
-    <nav className="flex items-center gap-1 border-b border-border">
+    <nav className="flex items-center gap-1 border-b border-border overflow-x-auto scrollbar-hide -mx-3 sm:mx-0 px-3 sm:px-0">
       {tabs.map((tab) => {
         const Icon = tab.icon;
         const isActive = location.pathname === tab.path;
-        
+
         return (
           <Link
             key={tab.id}
             to={tab.path}
             className={cn(
-              "flex items-center gap-2 px-4 py-3 text-sm font-medium transition-all duration-200 border-b-2 -mb-[1px]",
+              "flex items-center gap-2 px-3 sm:px-4 py-3 text-sm font-medium transition-all duration-200 border-b-2 -mb-[1px] whitespace-nowrap shrink-0",
               isActive
                 ? "text-primary border-primary"
                 : "text-muted-foreground border-transparent hover:text-foreground hover:border-muted"
