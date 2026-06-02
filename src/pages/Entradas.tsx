@@ -105,15 +105,15 @@ const Entradas = () => {
       ) : (
         <>
           {/* Page Header */}
-          <div className="flex items-start justify-between mb-8">
+          <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 mb-6 sm:mb-8">
             <div>
-              <h2 className="text-2xl font-bold text-primary mb-1">
+              <h2 className="text-xl sm:text-2xl font-bold text-primary mb-1">
                 Controle de Entradas
               </h2>
-              <p className="text-muted-foreground">Receitas mensais da casa</p>
+              <p className="text-sm text-muted-foreground">Receitas mensais da casa</p>
             </div>
             {isAdmin && (
-              <Button onClick={() => setAdding(true)}>
+              <Button onClick={() => setAdding(true)} className="w-full sm:w-auto">
                 <Plus className="w-4 h-4 mr-2" />
                 Nova Entrada
               </Button>
