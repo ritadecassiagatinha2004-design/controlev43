@@ -55,12 +55,12 @@ const Mensalidades = () => {
       ) : (
         <>
           {/* Page Header */}
-          <div className="flex items-start justify-between mb-8">
+          <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 mb-6 sm:mb-8">
             <div>
-              <h2 className="text-2xl font-bold text-primary mb-1">
+              <h2 className="text-xl sm:text-2xl font-bold text-primary mb-1">
                 Controle de Mensalidades
               </h2>
-              <p className="text-muted-foreground">
+              <p className="text-sm text-muted-foreground">
                 Acompanhamento dos pagamentos dos filhos de casa
               </p>
             </div>
