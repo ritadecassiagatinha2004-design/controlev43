@@ -12,6 +12,16 @@ import { useToast } from "@/hooks/use-toast";
 
 const Entradas = () => {
   const { data: income, isLoading } = useIncome(2026);
+  const { data: payments } = usePayments(2026);
+  const MENSALIDADE_VALUE = 50;
+
+  const paidByMonth = useMemo(() => {
+    const map: Record<string, number> = {};
+    (payments || []).forEach((p) => {
+      if (p.status === "Pago") map[p.month] = (map[p.month] || 0) + 1;
+    });
+    return map;
+  }, [payments]);
   const addIncome = useAddIncome();
   const updateIncome = useUpdateIncome();
   const deleteIncome = useDeleteIncome();
