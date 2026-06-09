@@ -194,7 +194,9 @@ const Entradas = () => {
           ) : (
             monthsWithIncome.map((month) => {
               const monthIncome = incomeByMonth?.[month] || [];
-              const total = monthIncome.reduce((sum, i) => sum + i.value, 0);
+              const paidCount = paidByMonth[month] || 0;
+              const mensalidadesTotal = paidCount * MENSALIDADE_VALUE;
+              const total = monthIncome.reduce((sum, i) => sum + i.value, 0) + mensalidadesTotal;
               
               const collapsed = isCollapsed(month);
               return (
