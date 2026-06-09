@@ -88,9 +88,12 @@ const Entradas = () => {
   };
 
   const monthsWithIncome = useMemo(() => {
-    const list = Object.keys(incomeByMonth || {});
-    return list.sort((a, b) => (MONTH_INDEX[a] ?? 99) - (MONTH_INDEX[b] ?? 99));
-  }, [incomeByMonth]);
+    const set = new Set<string>([
+      ...Object.keys(incomeByMonth || {}),
+      ...Object.keys(paidByMonth),
+    ]);
+    return Array.from(set).sort((a, b) => (MONTH_INDEX[a] ?? 99) - (MONTH_INDEX[b] ?? 99));
+  }, [incomeByMonth, paidByMonth]);
 
   const currentMonthIdx = new Date().getMonth();
   const isOpenByDefault = (month: string) => {
