@@ -1,6 +1,6 @@
 import { Layout } from "@/components/Layout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { useIncome, formatCurrency, useAddIncome, useUpdateIncome, useDeleteIncome, months, usePayments } from "@/hooks/useFinancialData";
+import { useIncome, formatCurrency, useAddIncome, useUpdateIncome, useDeleteIncome, months, usePayments, useMembers } from "@/hooks/useFinancialData";
 import { useAuthContext } from "@/contexts/AuthContext";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -13,6 +13,8 @@ import { useToast } from "@/hooks/use-toast";
 const Entradas = () => {
   const { data: income, isLoading } = useIncome(2026);
   const { data: payments } = usePayments(2026);
+  const { data: members } = useMembers();
+  const totalFilhos = members?.length || 0;
   const MENSALIDADE_VALUE = 50;
 
   const paidByMonth = useMemo(() => {
@@ -245,7 +247,7 @@ const Entradas = () => {
                         {paidCount > 0 && (
                           <tr className="border-b border-border bg-muted/20">
                             <td className="py-3 pr-2 text-sm text-foreground break-words">
-                              Mensalidades ({paidCount} {paidCount === 1 ? "paga" : "pagas"})
+                              Mensalidades ({paidCount} {paidCount === 1 ? "paga" : "pagas"} de {totalFilhos} {totalFilhos === 1 ? "filho" : "filhos"})
                             </td>
                             <td className="py-3 text-sm font-medium text-green-600 text-right whitespace-nowrap">
                               {formatCurrency(mensalidadesTotal)}
