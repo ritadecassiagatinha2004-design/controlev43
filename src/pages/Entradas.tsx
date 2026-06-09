@@ -1,6 +1,6 @@
 import { Layout } from "@/components/Layout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { useIncome, formatCurrency, useAddIncome, useUpdateIncome, useDeleteIncome, months, usePayments } from "@/hooks/useFinancialData";
+import { useIncome, formatCurrency, useAddIncome, useUpdateIncome, useDeleteIncome, months, usePayments, useMembers } from "@/hooks/useFinancialData";
 import { useAuthContext } from "@/contexts/AuthContext";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -13,6 +13,8 @@ import { useToast } from "@/hooks/use-toast";
 const Entradas = () => {
   const { data: income, isLoading } = useIncome(2026);
   const { data: payments } = usePayments(2026);
+  const { data: members } = useMembers();
+  const totalFilhos = members?.length || 0;
   const MENSALIDADE_VALUE = 50;
 
   const paidByMonth = useMemo(() => {
