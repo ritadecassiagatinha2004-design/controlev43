@@ -245,7 +245,7 @@ const Entradas = () => {
                         {paidCount > 0 && (
                           <tr className="border-b border-border bg-muted/20">
                             <td className="py-3 pr-2 text-sm text-foreground break-words">
-                              Mensalidades ({paidCount} {paidCount === 1 ? "paga" : "pagas"})
+                              Mensalidades ({paidCount} {paidCount === 1 ? "paga" : "pagas"} de {totalFilhos} {totalFilhos === 1 ? "filho" : "filhos"})
                             </td>
                             <td className="py-3 text-sm font-medium text-green-600 text-right whitespace-nowrap">
                               {formatCurrency(mensalidadesTotal)}
