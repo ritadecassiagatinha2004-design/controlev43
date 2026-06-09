@@ -1,6 +1,6 @@
 import { Layout } from "@/components/Layout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { useIncome, formatCurrency, useAddIncome, useUpdateIncome, useDeleteIncome, months } from "@/hooks/useFinancialData";
+import { useIncome, formatCurrency, useAddIncome, useUpdateIncome, useDeleteIncome, months, usePayments } from "@/hooks/useFinancialData";
 import { useAuthContext } from "@/contexts/AuthContext";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -12,6 +12,16 @@ import { useToast } from "@/hooks/use-toast";
 
 const Entradas = () => {
   const { data: income, isLoading } = useIncome(2026);
+  const { data: payments } = usePayments(2026);
+  const MENSALIDADE_VALUE = 50;
+
+  const paidByMonth = useMemo(() => {
+    const map: Record<string, number> = {};
+    (payments || []).forEach((p) => {
+      if (p.status === "Pago") map[p.month] = (map[p.month] || 0) + 1;
+    });
+    return map;
+  }, [payments]);
   const addIncome = useAddIncome();
   const updateIncome = useUpdateIncome();
   const deleteIncome = useDeleteIncome();
@@ -78,9 +88,12 @@ const Entradas = () => {
   };
 
   const monthsWithIncome = useMemo(() => {
-    const list = Object.keys(incomeByMonth || {});
-    return list.sort((a, b) => (MONTH_INDEX[a] ?? 99) - (MONTH_INDEX[b] ?? 99));
-  }, [incomeByMonth]);
+    const set = new Set<string>([
+      ...Object.keys(incomeByMonth || {}),
+      ...Object.keys(paidByMonth),
+    ]);
+    return Array.from(set).sort((a, b) => (MONTH_INDEX[a] ?? 99) - (MONTH_INDEX[b] ?? 99));
+  }, [incomeByMonth, paidByMonth]);
 
   const currentMonthIdx = new Date().getMonth();
   const isOpenByDefault = (month: string) => {
@@ -181,7 +194,9 @@ const Entradas = () => {
           ) : (
             monthsWithIncome.map((month) => {
               const monthIncome = incomeByMonth?.[month] || [];
-              const total = monthIncome.reduce((sum, i) => sum + i.value, 0);
+              const paidCount = paidByMonth[month] || 0;
+              const mensalidadesTotal = paidCount * MENSALIDADE_VALUE;
+              const total = monthIncome.reduce((sum, i) => sum + i.value, 0) + mensalidadesTotal;
               
               const collapsed = isCollapsed(month);
               return (
@@ -227,6 +242,17 @@ const Entradas = () => {
                         </tr>
                       </thead>
                       <tbody>
+                        {paidCount > 0 && (
+                          <tr className="border-b border-border bg-muted/20">
+                            <td className="py-3 pr-2 text-sm text-foreground break-words">
+                              Mensalidades ({paidCount} {paidCount === 1 ? "paga" : "pagas"})
+                            </td>
+                            <td className="py-3 text-sm font-medium text-green-600 text-right whitespace-nowrap">
+                              {formatCurrency(mensalidadesTotal)}
+                            </td>
+                            {isAdmin && <td className="py-3" />}
+                          </tr>
+                        )}
                         {monthIncome.map((item, index) => (
                           <tr
                             key={item.id}
