@@ -1,6 +1,6 @@
 import { Layout } from "@/components/Layout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { useIncome, formatCurrency, useAddIncome, useUpdateIncome, useDeleteIncome, months } from "@/hooks/useFinancialData";
+import { useIncome, formatCurrency, useAddIncome, useUpdateIncome, useDeleteIncome, months, usePayments } from "@/hooks/useFinancialData";
 import { useAuthContext } from "@/contexts/AuthContext";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
