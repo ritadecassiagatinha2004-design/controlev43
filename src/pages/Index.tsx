@@ -92,10 +92,11 @@ const Index = () => {
                   <div>
                     <label className="text-sm text-muted-foreground">Caixa Atual (R$)</label>
                     <Input
-                      type="number"
-                      step="0.01"
+                      type="text"
+                      inputMode="decimal"
+                      placeholder="877,21"
                       value={editData.caixa_atual_value}
-                      onChange={(e) => setEditData({ ...editData, caixa_atual_value: parseFloat(e.target.value) || 0 })}
+                      onChange={(e) => setEditData({ ...editData, caixa_atual_value: e.target.value })}
                     />
                   </div>
                   <div>
@@ -108,10 +109,11 @@ const Index = () => {
                   <div>
                     <label className="text-sm text-muted-foreground">Investimento (R$)</label>
                     <Input
-                      type="number"
-                      step="0.01"
+                      type="text"
+                      inputMode="decimal"
+                      placeholder="6.085,77"
                       value={editData.investimento_value}
-                      onChange={(e) => setEditData({ ...editData, investimento_value: parseFloat(e.target.value) || 0 })}
+                      onChange={(e) => setEditData({ ...editData, investimento_value: e.target.value })}
                     />
                   </div>
                   <div>
@@ -119,9 +121,10 @@ const Index = () => {
                     <Input
                       type="number"
                       value={editData.filhos_da_casa}
-                      onChange={(e) => setEditData({ ...editData, filhos_da_casa: parseInt(e.target.value) || 0 })}
+                      onChange={(e) => setEditData({ ...editData, filhos_da_casa: e.target.value })}
                     />
                   </div>
+
                 </div>
                 <div className="flex justify-end gap-2 mt-4">
                   <Button variant="outline" onClick={() => setEditing(false)}>
