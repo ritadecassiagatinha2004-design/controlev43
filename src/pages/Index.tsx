@@ -46,7 +46,10 @@ const Index = () => {
     try {
       await updateConfig.mutateAsync({
         id: config.id,
-        ...editData,
+        caixa_atual_month: editData.caixa_atual_month,
+        caixa_atual_value: parseBRNumber(editData.caixa_atual_value),
+        investimento_value: parseBRNumber(editData.investimento_value),
+        filhos_da_casa: parseInt(editData.filhos_da_casa) || 0,
       });
       setEditing(false);
       toast({
