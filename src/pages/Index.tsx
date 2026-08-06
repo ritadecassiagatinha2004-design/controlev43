@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
+import { parseBRNumber, formatBRNumber } from "@/lib/number";
 
 const Index = () => {
   const { data: config, isLoading: configLoading } = useDashboardConfig();
@@ -20,23 +21,24 @@ const Index = () => {
 
   const [editing, setEditing] = useState(false);
   const [editData, setEditData] = useState({
-    caixa_atual_value: 0,
+    caixa_atual_value: "",
     caixa_atual_month: "",
-    investimento_value: 0,
-    filhos_da_casa: 12,
+    investimento_value: "",
+    filhos_da_casa: "12",
   });
 
   const handleEdit = () => {
     if (config) {
       setEditData({
-        caixa_atual_value: config.caixa_atual_value,
+        caixa_atual_value: formatBRNumber(config.caixa_atual_value),
         caixa_atual_month: config.caixa_atual_month,
-        investimento_value: config.investimento_value,
-        filhos_da_casa: config.filhos_da_casa,
+        investimento_value: formatBRNumber(config.investimento_value),
+        filhos_da_casa: String(config.filhos_da_casa),
       });
       setEditing(true);
     }
   };
+
 
   const handleSave = async () => {
     if (!config) return;
@@ -44,7 +46,10 @@ const Index = () => {
     try {
       await updateConfig.mutateAsync({
         id: config.id,
-        ...editData,
+        caixa_atual_month: editData.caixa_atual_month,
+        caixa_atual_value: parseBRNumber(editData.caixa_atual_value),
+        investimento_value: parseBRNumber(editData.investimento_value),
+        filhos_da_casa: parseInt(editData.filhos_da_casa) || 0,
       });
       setEditing(false);
       toast({
@@ -87,10 +92,11 @@ const Index = () => {
                   <div>
                     <label className="text-sm text-muted-foreground">Caixa Atual (R$)</label>
                     <Input
-                      type="number"
-                      step="0.01"
+                      type="text"
+                      inputMode="decimal"
+                      placeholder="877,21"
                       value={editData.caixa_atual_value}
-                      onChange={(e) => setEditData({ ...editData, caixa_atual_value: parseFloat(e.target.value) || 0 })}
+                      onChange={(e) => setEditData({ ...editData, caixa_atual_value: e.target.value })}
                     />
                   </div>
                   <div>
@@ -103,10 +109,11 @@ const Index = () => {
                   <div>
                     <label className="text-sm text-muted-foreground">Investimento (R$)</label>
                     <Input
-                      type="number"
-                      step="0.01"
+                      type="text"
+                      inputMode="decimal"
+                      placeholder="6.085,77"
                       value={editData.investimento_value}
-                      onChange={(e) => setEditData({ ...editData, investimento_value: parseFloat(e.target.value) || 0 })}
+                      onChange={(e) => setEditData({ ...editData, investimento_value: e.target.value })}
                     />
                   </div>
                   <div>
@@ -114,9 +121,10 @@ const Index = () => {
                     <Input
                       type="number"
                       value={editData.filhos_da_casa}
-                      onChange={(e) => setEditData({ ...editData, filhos_da_casa: parseInt(e.target.value) || 0 })}
+                      onChange={(e) => setEditData({ ...editData, filhos_da_casa: e.target.value })}
                     />
                   </div>
+
                 </div>
                 <div className="flex justify-end gap-2 mt-4">
                   <Button variant="outline" onClick={() => setEditing(false)}>
