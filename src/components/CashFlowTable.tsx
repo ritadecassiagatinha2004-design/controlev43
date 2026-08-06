@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Pencil, Plus, Trash2, Save, X } from "lucide-react";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
+import { parseBRNumber, formatBRNumber } from "@/lib/number";
 
 export function CashFlowTable() {
   const { data: cashFlow, isLoading } = useCashFlow();
@@ -17,18 +18,18 @@ export function CashFlowTable() {
   const { toast } = useToast();
   
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [editData, setEditData] = useState({ month: "", value: 0 });
+  const [editData, setEditData] = useState({ month: "", value: "" });
   const [adding, setAdding] = useState(false);
-  const [newData, setNewData] = useState({ month: "", value: 0 });
+  const [newData, setNewData] = useState({ month: "", value: "" });
 
   const handleEdit = (item: { id: string; month: string; value: number }) => {
     setEditingId(item.id);
-    setEditData({ month: item.month, value: item.value });
+    setEditData({ month: item.month, value: formatBRNumber(item.value) });
   };
 
   const handleSave = async (id: string) => {
     try {
-      await updateCashFlow.mutateAsync({ id, ...editData });
+      await updateCashFlow.mutateAsync({ id, month: editData.month, value: parseBRNumber(editData.value) });
       setEditingId(null);
       toast({ title: "Salvo!", description: "Caixa atualizado com sucesso" });
     } catch (error) {
@@ -40,11 +41,12 @@ export function CashFlowTable() {
     try {
       await addCashFlow.mutateAsync({
         month: newData.month,
-        value: newData.value,
+        value: parseBRNumber(newData.value),
         display_order: (cashFlow?.length || 0) + 1,
       });
       setAdding(false);
-      setNewData({ month: "", value: 0 });
+      setNewData({ month: "", value: "" });
+
       toast({ title: "Adicionado!", description: "Novo mês adicionado com sucesso" });
     } catch (error) {
       toast({ title: "Erro", description: "Não foi possível adicionar", variant: "destructive" });
