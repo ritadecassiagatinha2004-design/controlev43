@@ -125,12 +125,14 @@ export function CashFlowTable() {
                   />
                   <div className="flex items-center gap-2">
                     <Input
-                      type="number"
-                      step="0.01"
+                      type="text"
+                      inputMode="decimal"
+                      placeholder="877,21"
                       value={editData.value}
-                      onChange={(e) => setEditData({ ...editData, value: parseFloat(e.target.value) || 0 })}
+                      onChange={(e) => setEditData({ ...editData, value: e.target.value })}
                       className="w-32"
                     />
+
                     <Button size="sm" onClick={() => handleSave(item.id)}>
                       <Save className="w-4 h-4" />
                     </Button>
