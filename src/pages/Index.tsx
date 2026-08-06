@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
+import { parseBRNumber, formatBRNumber } from "@/lib/number";
 
 const Index = () => {
   const { data: config, isLoading: configLoading } = useDashboardConfig();
@@ -20,23 +21,24 @@ const Index = () => {
 
   const [editing, setEditing] = useState(false);
   const [editData, setEditData] = useState({
-    caixa_atual_value: 0,
+    caixa_atual_value: "",
     caixa_atual_month: "",
-    investimento_value: 0,
-    filhos_da_casa: 12,
+    investimento_value: "",
+    filhos_da_casa: "12",
   });
 
   const handleEdit = () => {
     if (config) {
       setEditData({
-        caixa_atual_value: config.caixa_atual_value,
+        caixa_atual_value: formatBRNumber(config.caixa_atual_value),
         caixa_atual_month: config.caixa_atual_month,
-        investimento_value: config.investimento_value,
-        filhos_da_casa: config.filhos_da_casa,
+        investimento_value: formatBRNumber(config.investimento_value),
+        filhos_da_casa: String(config.filhos_da_casa),
       });
       setEditing(true);
     }
   };
+
 
   const handleSave = async () => {
     if (!config) return;
