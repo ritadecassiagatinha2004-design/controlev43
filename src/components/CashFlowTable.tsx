@@ -90,13 +90,14 @@ export function CashFlowTable() {
               className="flex-1"
             />
             <Input
-              type="number"
-              step="0.01"
-              placeholder="Valor"
+              type="text"
+              inputMode="decimal"
+              placeholder="877,21"
               value={newData.value}
-              onChange={(e) => setNewData({ ...newData, value: parseFloat(e.target.value) || 0 })}
+              onChange={(e) => setNewData({ ...newData, value: e.target.value })}
               className="w-32"
             />
+
             <Button size="sm" onClick={handleAdd}>
               <Save className="w-4 h-4" />
             </Button>
