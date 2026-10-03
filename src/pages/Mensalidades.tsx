@@ -4,22 +4,30 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { useMembers, usePayments, useUpdatePayment, useAddMember, useDeleteMember, months } from "@/hooks/useFinancialData";
+import { useMembers, usePayments, useUpdatePayment, useAddMember, useDeleteMember, useUpdateMember, months } from "@/hooks/useFinancialData";
 import { useAuthContext } from "@/contexts/AuthContext";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { Pencil, Trash2, Plus } from "lucide-react";
 
+const MONTH_INDEX: Record<string, number> = {
+  "Janeiro": 1, "Fevereiro": 2, "Março": 3, "Marco": 3, "Abril": 4,
+  "Maio": 5, "Junho": 6, "Julho": 7, "Agosto": 8, "Setembro": 9,
+  "Outubro": 10, "Novembro": 11, "Dezembro": 12,
+};
+
 const Mensalidades = () => {
   const [selectedYear] = useState(2026);
   const [editOpen, setEditOpen] = useState(false);
   const [newName, setNewName] = useState("");
+  const [newEntryMonth, setNewEntryMonth] = useState<string>("");
   const { data: members, isLoading: membersLoading } = useMembers();
   const { data: payments, isLoading: paymentsLoading } = usePayments(selectedYear);
   const updatePayment = useUpdatePayment();
   const addMember = useAddMember();
   const deleteMember = useDeleteMember();
+  const updateMember = useUpdateMember();
   const { isAdmin } = useAuthContext();
   const { toast } = useToast();
 
@@ -56,11 +64,21 @@ const Mensalidades = () => {
     const name = newName.trim();
     if (!name) return;
     try {
-      await addMember.mutateAsync(name);
+      await addMember.mutateAsync({ name, entry_month: newEntryMonth || null });
       setNewName("");
+      setNewEntryMonth("");
       toast({ title: "Adicionado!", description: `${name} foi adicionado(a).` });
     } catch {
       toast({ title: "Erro", description: "Não foi possível adicionar", variant: "destructive" });
+    }
+  };
+
+  const handleChangeEntryMonth = async (id: string, entryMonth: string) => {
+    try {
+      await updateMember.mutateAsync({ id, entry_month: entryMonth === "none" ? null : entryMonth });
+      toast({ title: "Atualizado!", description: "Mês de entrada alterado." });
+    } catch {
+      toast({ title: "Erro", description: "Não foi possível atualizar", variant: "destructive" });
     }
   };
 
@@ -112,14 +130,38 @@ const Mensalidades = () => {
                         onChange={(e) => setNewName(e.target.value)}
                         onKeyDown={(e) => e.key === "Enter" && handleAddMember()}
                       />
+                      <Select value={newEntryMonth} onValueChange={setNewEntryMonth}>
+                        <SelectTrigger className="w-32">
+                          <SelectValue placeholder="Entrada" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {months.map((m) => (
+                            <SelectItem key={m} value={m}>{m}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
                       <Button onClick={handleAddMember} disabled={addMember.isPending} size="icon">
                         <Plus className="h-4 w-4" />
                       </Button>
                     </div>
                     <div className="mt-4 space-y-2 max-h-64 overflow-y-auto">
                       {members?.map((member) => (
-                        <div key={member.id} className="flex items-center justify-between rounded-md border border-border px-3 py-2">
-                          <span className="text-sm font-medium">{member.name}</span>
+                        <div key={member.id} className="flex items-center justify-between gap-2 rounded-md border border-border px-3 py-2">
+                          <span className="text-sm font-medium flex-1">{member.name}</span>
+                          <Select
+                            value={member.entry_month ?? "none"}
+                            onValueChange={(v) => handleChangeEntryMonth(member.id, v)}
+                          >
+                            <SelectTrigger className="w-32 h-8 text-xs">
+                              <SelectValue placeholder="Entrada" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="none">Sem entrada</SelectItem>
+                              {months.map((m) => (
+                                <SelectItem key={m} value={m}>{m}</SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
                           <Button
                             variant="ghost"
                             size="icon"
@@ -170,6 +212,15 @@ const Mensalidades = () => {
                           {member.name}
                         </td>
                         {months.map((month) => {
+                          const entryIdx = member.entry_month ? (MONTH_INDEX[member.entry_month] ?? 1) : 1;
+                          const monthIdx = MONTH_INDEX[month] ?? 99;
+                          if (monthIdx < entryIdx) {
+                            return (
+                              <td key={month} className="py-3 px-2 text-center">
+                                <span className="inline-block px-3 py-1 text-xs text-muted-foreground select-none">-</span>
+                              </td>
+                            );
+                          }
                           const payment = getPaymentStatus(member.id, month);
                           const status = payment?.status ?? "Pendente";
                           return (

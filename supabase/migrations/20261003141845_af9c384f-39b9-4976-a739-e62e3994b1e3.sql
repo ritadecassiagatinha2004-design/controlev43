@@ -1,0 +1,1 @@
+ALTER TABLE public.members ADD COLUMN entry_month text;
