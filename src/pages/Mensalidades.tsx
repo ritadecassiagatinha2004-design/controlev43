@@ -4,7 +4,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { useMembers, usePayments, useUpdatePayment, useAddMember, useDeleteMember, useUpdateMember, months } from "@/hooks/useFinancialData";
+import { useMembers, usePayments, useUpdatePayment, useAddMember, useDeleteMember, useUpdateMember, months, formatCurrency } from "@/hooks/useFinancialData";
 import { useAuthContext } from "@/contexts/AuthContext";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
@@ -188,6 +188,33 @@ const Mensalidades = () => {
             </div>
           </div>
 
+          {/* Summary */}
+          {(() => {
+            const MENSALIDADE_VALOR = 50;
+            const deveCount = payments?.filter((p) => p.status === "Deve").length ?? 0;
+            return (
+              <div className="grid grid-cols-2 gap-3 mb-6">
+                <Card className="border shadow-sm">
+                  <CardContent className="p-4">
+                    <p className="text-xs text-muted-foreground mb-1">Valor da mensalidade</p>
+                    <p className="text-lg sm:text-xl font-bold text-primary">{formatCurrency(MENSALIDADE_VALOR)}</p>
+                  </CardContent>
+                </Card>
+                <Card className="border shadow-sm">
+                  <CardContent className="p-4">
+                    <p className="text-xs text-muted-foreground mb-1">Filhos devendo</p>
+                    <p className="text-lg sm:text-xl font-bold text-red-600">
+                      {deveCount} {deveCount === 1 ? "filho" : "filhos"}
+                      <span className="text-sm font-medium text-muted-foreground ml-2">
+                        ({formatCurrency(deveCount * MENSALIDADE_VALOR)})
+                      </span>
+                    </p>
+                  </CardContent>
+                </Card>
+              </div>
+            );
+          })()}
+
           {/* Payments Table */}
           <Card className="border shadow-sm overflow-hidden">
             <CardContent className="p-0">
@@ -218,6 +245,15 @@ const Mensalidades = () => {
                             return (
                               <td key={month} className="py-3 px-2 text-center">
                                 <span className="inline-block px-3 py-1 text-xs text-muted-foreground select-none">-</span>
+                              </td>
+                            );
+                          }
+                          if (member.entry_month && monthIdx === entryIdx) {
+                            return (
+                              <td key={month} className="py-3 px-2 text-center">
+                                <span className="inline-block px-3 py-1 rounded-md text-xs font-medium bg-blue-500 text-white select-none">
+                                  Entrada
+                                </span>
                               </td>
                             );
                           }
