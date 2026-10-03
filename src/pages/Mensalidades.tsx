@@ -188,6 +188,33 @@ const Mensalidades = () => {
             </div>
           </div>
 
+          {/* Summary */}
+          {(() => {
+            const MENSALIDADE_VALOR = 50;
+            const deveCount = payments?.filter((p) => p.status === "Deve").length ?? 0;
+            return (
+              <div className="grid grid-cols-2 gap-3 mb-6">
+                <Card className="border shadow-sm">
+                  <CardContent className="p-4">
+                    <p className="text-xs text-muted-foreground mb-1">Valor da mensalidade</p>
+                    <p className="text-lg sm:text-xl font-bold text-primary">{formatCurrency(MENSALIDADE_VALOR)}</p>
+                  </CardContent>
+                </Card>
+                <Card className="border shadow-sm">
+                  <CardContent className="p-4">
+                    <p className="text-xs text-muted-foreground mb-1">Filhos devendo</p>
+                    <p className="text-lg sm:text-xl font-bold text-red-600">
+                      {deveCount} {deveCount === 1 ? "filho" : "filhos"}
+                      <span className="text-sm font-medium text-muted-foreground ml-2">
+                        ({formatCurrency(deveCount * MENSALIDADE_VALOR)})
+                      </span>
+                    </p>
+                  </CardContent>
+                </Card>
+              </div>
+            );
+          })()}
+
           {/* Payments Table */}
           <Card className="border shadow-sm overflow-hidden">
             <CardContent className="p-0">
