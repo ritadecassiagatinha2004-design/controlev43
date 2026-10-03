@@ -198,6 +198,32 @@ export function useDeleteCashFlow() {
 }
 
 // Members Hook
+export function useAddMember() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (name: string) => {
+      const { error } = await supabase.from("members").insert({ name });
+      if (error) throw error;
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["members"] }),
+  });
+}
+
+export function useDeleteMember() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (id: string) => {
+      await supabase.from("payments").delete().eq("member_id", id);
+      const { error } = await supabase.from("members").delete().eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["members"] });
+      queryClient.invalidateQueries({ queryKey: ["payments"] });
+    },
+  });
+}
+
 export function useMembers() {
   useRealtimeSubscription("members", ["members"]);
   
