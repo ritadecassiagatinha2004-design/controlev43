@@ -212,6 +212,15 @@ const Mensalidades = () => {
                           {member.name}
                         </td>
                         {months.map((month) => {
+                          const entryIdx = member.entry_month ? (MONTH_INDEX[member.entry_month] ?? 1) : 1;
+                          const monthIdx = MONTH_INDEX[month] ?? 99;
+                          if (monthIdx < entryIdx) {
+                            return (
+                              <td key={month} className="py-3 px-2 text-center">
+                                <span className="inline-block px-3 py-1 text-xs text-muted-foreground select-none">-</span>
+                              </td>
+                            );
+                          }
                           const payment = getPaymentStatus(member.id, month);
                           const status = payment?.status ?? "Pendente";
                           return (
