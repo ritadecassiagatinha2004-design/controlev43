@@ -221,6 +221,15 @@ const Mensalidades = () => {
                               </td>
                             );
                           }
+                          if (member.entry_month && monthIdx === entryIdx) {
+                            return (
+                              <td key={month} className="py-3 px-2 text-center">
+                                <span className="inline-block px-3 py-1 rounded-md text-xs font-medium bg-blue-500 text-white select-none">
+                                  Entrada
+                                </span>
+                              </td>
+                            );
+                          }
                           const payment = getPaymentStatus(member.id, month);
                           const status = payment?.status ?? "Pendente";
                           return (
