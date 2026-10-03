@@ -4,7 +4,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { useMembers, usePayments, useUpdatePayment, useAddMember, useDeleteMember, useUpdateMember, months } from "@/hooks/useFinancialData";
+import { useMembers, usePayments, useUpdatePayment, useAddMember, useDeleteMember, useUpdateMember, months, formatCurrency } from "@/hooks/useFinancialData";
 import { useAuthContext } from "@/contexts/AuthContext";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
