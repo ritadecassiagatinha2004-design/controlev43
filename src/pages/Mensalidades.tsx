@@ -1,17 +1,25 @@
 import { Layout } from "@/components/Layout";
 import { Card, CardContent } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { useMembers, usePayments, useUpdatePayment, months } from "@/hooks/useFinancialData";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { useMembers, usePayments, useUpdatePayment, useAddMember, useDeleteMember, months } from "@/hooks/useFinancialData";
 import { useAuthContext } from "@/contexts/AuthContext";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
+import { Pencil, Trash2, Plus } from "lucide-react";
 
 const Mensalidades = () => {
   const [selectedYear] = useState(2026);
+  const [editOpen, setEditOpen] = useState(false);
+  const [newName, setNewName] = useState("");
   const { data: members, isLoading: membersLoading } = useMembers();
   const { data: payments, isLoading: paymentsLoading } = usePayments(selectedYear);
   const updatePayment = useUpdatePayment();
+  const addMember = useAddMember();
+  const deleteMember = useDeleteMember();
   const { isAdmin } = useAuthContext();
   const { toast } = useToast();
 
