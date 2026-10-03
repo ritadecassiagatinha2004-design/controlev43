@@ -4,22 +4,30 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { useMembers, usePayments, useUpdatePayment, useAddMember, useDeleteMember, months } from "@/hooks/useFinancialData";
+import { useMembers, usePayments, useUpdatePayment, useAddMember, useDeleteMember, useUpdateMember, months } from "@/hooks/useFinancialData";
 import { useAuthContext } from "@/contexts/AuthContext";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { Pencil, Trash2, Plus } from "lucide-react";
 
+const MONTH_INDEX: Record<string, number> = {
+  "Janeiro": 1, "Fevereiro": 2, "Março": 3, "Marco": 3, "Abril": 4,
+  "Maio": 5, "Junho": 6, "Julho": 7, "Agosto": 8, "Setembro": 9,
+  "Outubro": 10, "Novembro": 11, "Dezembro": 12,
+};
+
 const Mensalidades = () => {
   const [selectedYear] = useState(2026);
   const [editOpen, setEditOpen] = useState(false);
   const [newName, setNewName] = useState("");
+  const [newEntryMonth, setNewEntryMonth] = useState<string>("");
   const { data: members, isLoading: membersLoading } = useMembers();
   const { data: payments, isLoading: paymentsLoading } = usePayments(selectedYear);
   const updatePayment = useUpdatePayment();
   const addMember = useAddMember();
   const deleteMember = useDeleteMember();
+  const updateMember = useUpdateMember();
   const { isAdmin } = useAuthContext();
   const { toast } = useToast();
 
