@@ -22,6 +22,7 @@ export interface CashFlowItem {
 export interface Member {
   id: string;
   name: string;
+  entry_month: string | null;
 }
 
 export interface Payment {
@@ -201,8 +202,19 @@ export function useDeleteCashFlow() {
 export function useAddMember() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async (name: string) => {
-      const { error } = await supabase.from("members").insert({ name });
+    mutationFn: async ({ name, entry_month }: { name: string; entry_month?: string | null }) => {
+      const { error } = await supabase.from("members").insert({ name, entry_month: entry_month || null });
+      if (error) throw error;
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["members"] }),
+  });
+}
+
+export function useUpdateMember() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ id, ...data }: { id: string; name?: string; entry_month?: string | null }) => {
+      const { error } = await supabase.from("members").update(data).eq("id", id);
       if (error) throw error;
     },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["members"] }),
