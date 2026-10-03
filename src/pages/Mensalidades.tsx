@@ -191,7 +191,10 @@ const Mensalidades = () => {
           {/* Summary */}
           {(() => {
             const MENSALIDADE_VALOR = 50;
-            const deveCount = payments?.filter((p) => p.status === "Deve").length ?? 0;
+            const devePayments = payments?.filter((p) => p.status === "Deve") ?? [];
+            const deveMemberIds = new Set(devePayments.map((p) => p.member_id));
+            const deveFilhos = deveMemberIds.size;
+            const deveTotal = devePayments.length * MENSALIDADE_VALOR;
             return (
               <div className="grid grid-cols-2 gap-3 mb-6">
                 <Card className="border shadow-sm">
@@ -202,12 +205,12 @@ const Mensalidades = () => {
                 </Card>
                 <Card className="border shadow-sm">
                   <CardContent className="p-4">
-                    <p className="text-xs text-muted-foreground mb-1">Mensalidades devendo</p>
+                    <p className="text-xs text-muted-foreground mb-1">Filhos devendo</p>
                     <p className="text-lg sm:text-xl font-bold text-red-600">
-                      {deveCount} {deveCount === 1 ? "mensalidade" : "mensalidades"}
-                      <span className="text-sm font-medium text-muted-foreground ml-2">
-                        ({formatCurrency(deveCount * MENSALIDADE_VALOR)})
-                      </span>
+                      {deveFilhos} {deveFilhos === 1 ? "filho" : "filhos"}
+                    </p>
+                    <p className="text-sm font-medium text-red-600/80 mt-1">
+                      Valor: {formatCurrency(deveTotal)}
                     </p>
                   </CardContent>
                 </Card>
