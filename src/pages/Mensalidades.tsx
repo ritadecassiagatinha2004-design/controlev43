@@ -64,11 +64,21 @@ const Mensalidades = () => {
     const name = newName.trim();
     if (!name) return;
     try {
-      await addMember.mutateAsync(name);
+      await addMember.mutateAsync({ name, entry_month: newEntryMonth || null });
       setNewName("");
+      setNewEntryMonth("");
       toast({ title: "Adicionado!", description: `${name} foi adicionado(a).` });
     } catch {
       toast({ title: "Erro", description: "Não foi possível adicionar", variant: "destructive" });
+    }
+  };
+
+  const handleChangeEntryMonth = async (id: string, entryMonth: string) => {
+    try {
+      await updateMember.mutateAsync({ id, entry_month: entryMonth === "none" ? null : entryMonth });
+      toast({ title: "Atualizado!", description: "Mês de entrada alterado." });
+    } catch {
+      toast({ title: "Erro", description: "Não foi possível atualizar", variant: "destructive" });
     }
   };
 
