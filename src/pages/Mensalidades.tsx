@@ -202,9 +202,9 @@ const Mensalidades = () => {
                 </Card>
                 <Card className="border shadow-sm">
                   <CardContent className="p-4">
-                    <p className="text-xs text-muted-foreground mb-1">Filhos devendo</p>
+                    <p className="text-xs text-muted-foreground mb-1">Mensalidades devendo</p>
                     <p className="text-lg sm:text-xl font-bold text-red-600">
-                      {deveCount} {deveCount === 1 ? "filho" : "filhos"}
+                      {deveCount} {deveCount === 1 ? "mensalidade" : "mensalidades"}
                       <span className="text-sm font-medium text-muted-foreground ml-2">
                         ({formatCurrency(deveCount * MENSALIDADE_VALOR)})
                       </span>
