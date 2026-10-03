@@ -130,14 +130,38 @@ const Mensalidades = () => {
                         onChange={(e) => setNewName(e.target.value)}
                         onKeyDown={(e) => e.key === "Enter" && handleAddMember()}
                       />
+                      <Select value={newEntryMonth} onValueChange={setNewEntryMonth}>
+                        <SelectTrigger className="w-32">
+                          <SelectValue placeholder="Entrada" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {months.map((m) => (
+                            <SelectItem key={m} value={m}>{m}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
                       <Button onClick={handleAddMember} disabled={addMember.isPending} size="icon">
                         <Plus className="h-4 w-4" />
                       </Button>
                     </div>
                     <div className="mt-4 space-y-2 max-h-64 overflow-y-auto">
                       {members?.map((member) => (
-                        <div key={member.id} className="flex items-center justify-between rounded-md border border-border px-3 py-2">
-                          <span className="text-sm font-medium">{member.name}</span>
+                        <div key={member.id} className="flex items-center justify-between gap-2 rounded-md border border-border px-3 py-2">
+                          <span className="text-sm font-medium flex-1">{member.name}</span>
+                          <Select
+                            value={member.entry_month ?? "none"}
+                            onValueChange={(v) => handleChangeEntryMonth(member.id, v)}
+                          >
+                            <SelectTrigger className="w-32 h-8 text-xs">
+                              <SelectValue placeholder="Entrada" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="none">Sem entrada</SelectItem>
+                              {months.map((m) => (
+                                <SelectItem key={m} value={m}>{m}</SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
                           <Button
                             variant="ghost"
                             size="icon"
