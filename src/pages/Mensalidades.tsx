@@ -33,19 +33,27 @@ const Mensalidades = () => {
   const { isAdmin } = useAuthContext();
   const { toast } = useToast();
 
-  // Mês vigente primeiro; o restante vira histórico ao rolar para o lado.
+  // Ordem cronológica: meses anteriores à esquerda, mês vigente em destaque, os seguintes à direita.
   const currentMonthName = months[new Date().getMonth()];
   const displayMonths = useMemo(() => {
-    const current = months.find((m) => monthIndex(m) === monthIndex(currentMonthName));
-    if (!current) return months;
-    const past = months
-      .filter((m) => monthIndex(m) < monthIndex(current))
-      .sort((a, b) => monthIndex(b) - monthIndex(a));
-    const future = months
-      .filter((m) => monthIndex(m) > monthIndex(current))
-      .sort((a, b) => monthIndex(a) - monthIndex(b));
-    return [current, ...past, ...future];
+    const ordered = [...months].sort((a, b) => monthIndex(a) - monthIndex(b));
+    return ordered.some((m) => monthIndex(m) === monthIndex(currentMonthName)) ? ordered : months;
   }, [currentMonthName]);
+
+  const tableWrapRef = useRef<HTMLDivElement>(null);
+
+  // Abre a tela já com o mês vigente visível na tela.
+  useEffect(() => {
+    if (membersLoading || paymentsLoading) return;
+    const container = tableWrapRef.current;
+    const currentCell = container?.querySelector<HTMLElement>("[data-current-month='true']");
+    if (!container || !currentCell) return;
+    const stickyCell = container.querySelector<HTMLElement>("[data-sticky-column='true']");
+    const offset = (stickyCell?.offsetWidth ?? 0) + 8;
+    const shift =
+      currentCell.getBoundingClientRect().left - container.getBoundingClientRect().left - offset;
+    container.scrollLeft = Math.max(0, container.scrollLeft + shift);
+  }, [membersLoading, paymentsLoading, members, payments]);
 
   const getPaymentStatus = (memberId: string, month: string) => {
     const payment = payments?.find((p) => p.member_id === memberId && p.month === month);
