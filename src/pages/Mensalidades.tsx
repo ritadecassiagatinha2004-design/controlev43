@@ -7,7 +7,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { useMembers, usePayments, useUpdatePayment, useAddMember, useDeleteMember, useUpdateMember, months, formatCurrency } from "@/hooks/useFinancialData";
 import { useAuthContext } from "@/contexts/AuthContext";
 import { cn } from "@/lib/utils";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { Pencil, Trash2, Plus } from "lucide-react";
 
@@ -33,19 +33,27 @@ const Mensalidades = () => {
   const { isAdmin } = useAuthContext();
   const { toast } = useToast();
 
-  // Mês vigente primeiro; o restante vira histórico ao rolar para o lado.
+  // Ordem cronológica: meses anteriores à esquerda, mês vigente em destaque, os seguintes à direita.
   const currentMonthName = months[new Date().getMonth()];
   const displayMonths = useMemo(() => {
-    const current = months.find((m) => monthIndex(m) === monthIndex(currentMonthName));
-    if (!current) return months;
-    const past = months
-      .filter((m) => monthIndex(m) < monthIndex(current))
-      .sort((a, b) => monthIndex(b) - monthIndex(a));
-    const future = months
-      .filter((m) => monthIndex(m) > monthIndex(current))
-      .sort((a, b) => monthIndex(a) - monthIndex(b));
-    return [current, ...past, ...future];
+    const ordered = [...months].sort((a, b) => monthIndex(a) - monthIndex(b));
+    return ordered.some((m) => monthIndex(m) === monthIndex(currentMonthName)) ? ordered : months;
   }, [currentMonthName]);
+
+  const tableWrapRef = useRef<HTMLDivElement>(null);
+
+  // Abre a tela já com o mês vigente visível na tela.
+  useEffect(() => {
+    if (membersLoading || paymentsLoading) return;
+    const container = tableWrapRef.current;
+    const currentCell = container?.querySelector<HTMLElement>("[data-current-month='true']");
+    if (!container || !currentCell) return;
+    const stickyCell = container.querySelector<HTMLElement>("[data-sticky-column='true']");
+    const offset = (stickyCell?.offsetWidth ?? 0) + 8;
+    const shift =
+      currentCell.getBoundingClientRect().left - container.getBoundingClientRect().left - offset;
+    container.scrollLeft = Math.max(0, container.scrollLeft + shift);
+  }, [membersLoading, paymentsLoading, members, payments]);
 
   const getPaymentStatus = (memberId: string, month: string) => {
     const payment = payments?.find((p) => p.member_id === memberId && p.month === month);
@@ -246,11 +254,11 @@ const Mensalidades = () => {
           {/* Payments Table */}
           <Card className="border shadow-sm overflow-hidden">
             <CardContent className="p-0">
-              <div className="overflow-x-auto">
+              <div ref={tableWrapRef} className="overflow-x-auto">
                 <table className="w-full">
                   <thead>
                     <tr className="border-b border-border">
-                      <th className="text-left py-3 px-3 sm:py-4 sm:px-4 text-xs sm:text-sm font-medium text-muted-foreground bg-muted sticky left-0 z-10 shadow-[2px_0_4px_-2px_rgba(0,0,0,0.08)]">
+                      <th data-sticky-column="true" className="text-left py-3 px-3 sm:py-4 sm:px-4 text-xs sm:text-sm font-medium text-muted-foreground bg-muted sticky left-0 z-10 shadow-[2px_0_4px_-2px_rgba(0,0,0,0.08)]">
                         Filhos(a)
                       </th>
                       {displayMonths.map((month) => {
@@ -258,6 +266,7 @@ const Mensalidades = () => {
                         return (
                           <th
                             key={month}
+                            data-current-month={isCurrent ? "true" : undefined}
                             className={cn(
                               "text-center py-3 px-2 sm:py-4 text-xs sm:text-sm font-medium min-w-[80px] sm:min-w-[90px]",
                               isCurrent ? "bg-primary/10 text-primary" : "text-muted-foreground bg-muted"
