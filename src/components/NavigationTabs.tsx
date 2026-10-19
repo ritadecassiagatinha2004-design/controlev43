@@ -18,9 +18,9 @@ const tabs: Tab[] = [
 
 export function NavigationTabs() {
   const location = useLocation();
-  
+
   return (
-    <nav className="flex items-center gap-1 border-b border-border overflow-x-auto scrollbar-hide -mx-3 sm:mx-0 px-3 sm:px-0">
+    <nav className="grid grid-cols-2 gap-2 py-2 -mx-3 sm:mx-0">
       {tabs.map((tab) => {
         const Icon = tab.icon;
         const isActive = location.pathname === tab.path;
@@ -29,15 +29,16 @@ export function NavigationTabs() {
           <Link
             key={tab.id}
             to={tab.path}
+            aria-current={isActive ? "page" : undefined}
             className={cn(
-              "flex items-center gap-2 px-3 sm:px-4 py-3 text-sm font-medium transition-all duration-200 border-b-2 -mb-[1px] whitespace-nowrap shrink-0",
+              "flex items-center justify-center gap-2 rounded-xl border px-3 py-2.5 text-sm font-semibold transition-colors",
               isActive
-                ? "text-primary border-primary"
-                : "text-muted-foreground border-transparent hover:text-foreground hover:border-muted"
+                ? "border-primary bg-primary text-primary-foreground shadow-sm"
+                : "border-border bg-card text-muted-foreground hover:border-primary/40 hover:text-foreground"
             )}
           >
-            <Icon className="w-4 h-4" />
-            <span>{tab.label}</span>
+            <Icon className="w-4 h-4 shrink-0" />
+            <span className="truncate">{tab.label}</span>
           </Link>
         );
       })}
