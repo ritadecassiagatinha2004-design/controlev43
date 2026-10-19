@@ -7,7 +7,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { useMembers, usePayments, useUpdatePayment, useAddMember, useDeleteMember, useUpdateMember, months, formatCurrency } from "@/hooks/useFinancialData";
 import { useAuthContext } from "@/contexts/AuthContext";
 import { cn } from "@/lib/utils";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { Pencil, Trash2, Plus } from "lucide-react";
 
@@ -16,6 +16,8 @@ const MONTH_INDEX: Record<string, number> = {
   "Maio": 5, "Junho": 6, "Julho": 7, "Agosto": 8, "Setembro": 9,
   "Outubro": 10, "Novembro": 11, "Dezembro": 12,
 };
+
+const monthIndex = (month: string) => MONTH_INDEX[month] ?? 99;
 
 const Mensalidades = () => {
   const [selectedYear] = useState(2026);
@@ -31,6 +33,20 @@ const Mensalidades = () => {
   const { isAdmin } = useAuthContext();
   const { toast } = useToast();
 
+  // Mês vigente primeiro; o restante vira histórico ao rolar para o lado.
+  const currentMonthName = months[new Date().getMonth()];
+  const displayMonths = useMemo(() => {
+    const current = months.find((m) => monthIndex(m) === monthIndex(currentMonthName));
+    if (!current) return months;
+    const past = months
+      .filter((m) => monthIndex(m) < monthIndex(current))
+      .sort((a, b) => monthIndex(b) - monthIndex(a));
+    const future = months
+      .filter((m) => monthIndex(m) > monthIndex(current))
+      .sort((a, b) => monthIndex(a) - monthIndex(b));
+    return [current, ...past, ...future];
+  }, [currentMonthName]);
+
   const getPaymentStatus = (memberId: string, month: string) => {
     const payment = payments?.find((p) => p.member_id === memberId && p.month === month);
     return payment;
@@ -42,7 +58,7 @@ const Mensalidades = () => {
     const payment = getPaymentStatus(memberId, month);
     const member = members?.find((item) => item.id === memberId);
     if (!member) return;
-    if (member.entry_month && (MONTH_INDEX[month] ?? 0) <= (MONTH_INDEX[member.entry_month] ?? 0)) return;
+    if (member.entry_month && monthIndex(month) <= monthIndex(member.entry_month)) return;
 
     const currentStatus = payment?.status ?? "Pendente";
     const nextStatus: "Pago" | "Pendente" | "Deve" =
@@ -237,11 +253,27 @@ const Mensalidades = () => {
                       <th className="text-left py-3 px-3 sm:py-4 sm:px-4 text-xs sm:text-sm font-medium text-muted-foreground bg-muted/30 sticky left-0 z-10 shadow-[2px_0_4px_-2px_rgba(0,0,0,0.08)]">
                         Filhos(a)
                       </th>
-                      {months.map((month) => (
-                        <th key={month} className="text-center py-3 px-2 sm:py-4 text-xs sm:text-sm font-medium text-muted-foreground bg-muted/30 min-w-[80px] sm:min-w-[90px]">
-                          {month}
-                        </th>
-                      ))}
+                      {displayMonths.map((month) => {
+                        const isCurrent = month === currentMonthName;
+                        return (
+                          <th
+                            key={month}
+                            className={cn(
+                              "text-center py-3 px-2 sm:py-4 text-xs sm:text-sm font-medium min-w-[80px] sm:min-w-[90px]",
+                              isCurrent ? "bg-primary/10 text-primary" : "text-muted-foreground bg-muted/30"
+                            )}
+                          >
+                            {isCurrent ? (
+                              <span className="inline-flex items-center gap-1.5">
+                                <span className="w-1.5 h-1.5 rounded-full bg-primary" />
+                                {month}
+                              </span>
+                            ) : (
+                              month
+                            )}
+                          </th>
+                        );
+                      })}
                     </tr>
                   </thead>
                   <tbody>
@@ -250,19 +282,20 @@ const Mensalidades = () => {
                         <td className="py-3 px-3 sm:px-4 text-xs sm:text-sm font-medium text-foreground sticky left-0 z-10 bg-card shadow-[2px_0_4px_-2px_rgba(0,0,0,0.08)]">
                           {member.name}
                         </td>
-                        {months.map((month) => {
-                          const entryIdx = member.entry_month ? (MONTH_INDEX[member.entry_month] ?? 1) : 1;
-                          const monthIdx = MONTH_INDEX[month] ?? 99;
+                        {displayMonths.map((month) => {
+                          const highlight = month === currentMonthName ? "bg-primary/5" : "";
+                          const entryIdx = member.entry_month ? monthIndex(member.entry_month) : 1;
+                          const monthIdx = monthIndex(month);
                           if (monthIdx < entryIdx) {
                             return (
-                              <td key={month} className="py-3 px-2 text-center">
+                              <td key={month} className={cn("py-3 px-2 text-center", highlight)}>
                                 <span className="inline-block px-3 py-1 text-xs text-muted-foreground select-none">-</span>
                               </td>
                             );
                           }
                           if (member.entry_month && monthIdx === entryIdx) {
                             return (
-                              <td key={month} className="py-3 px-2 text-center">
+                              <td key={month} className={cn("py-3 px-2 text-center", highlight)}>
                                 <span className="inline-block px-3 py-1 rounded-md text-xs font-medium bg-blue-500 text-white select-none">
                                   Entrada
                                 </span>
@@ -272,7 +305,7 @@ const Mensalidades = () => {
                           const payment = getPaymentStatus(member.id, month);
                           const status = payment?.status ?? "Pendente";
                           return (
-                            <td key={month} className="py-3 px-2 text-center">
+                            <td key={month} className={cn("py-3 px-2 text-center", highlight)}>
                               <button
                                 onClick={() => handleCycleStatus(member.id, month)}
                                 disabled={!isAdmin || updatePayment.isPending}
