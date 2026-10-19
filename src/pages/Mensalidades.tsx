@@ -254,11 +254,11 @@ const Mensalidades = () => {
           {/* Payments Table */}
           <Card className="border shadow-sm overflow-hidden">
             <CardContent className="p-0">
-              <div className="overflow-x-auto">
+              <div ref={tableWrapRef} className="overflow-x-auto">
                 <table className="w-full">
                   <thead>
                     <tr className="border-b border-border">
-                      <th className="text-left py-3 px-3 sm:py-4 sm:px-4 text-xs sm:text-sm font-medium text-muted-foreground bg-muted sticky left-0 z-10 shadow-[2px_0_4px_-2px_rgba(0,0,0,0.08)]">
+                      <th data-sticky-column="true" className="text-left py-3 px-3 sm:py-4 sm:px-4 text-xs sm:text-sm font-medium text-muted-foreground bg-muted sticky left-0 z-10 shadow-[2px_0_4px_-2px_rgba(0,0,0,0.08)]">
                         Filhos(a)
                       </th>
                       {displayMonths.map((month) => {
@@ -266,6 +266,7 @@ const Mensalidades = () => {
                         return (
                           <th
                             key={month}
+                            data-current-month={isCurrent ? "true" : undefined}
                             className={cn(
                               "text-center py-3 px-2 sm:py-4 text-xs sm:text-sm font-medium min-w-[80px] sm:min-w-[90px]",
                               isCurrent ? "bg-primary/10 text-primary" : "text-muted-foreground bg-muted"
