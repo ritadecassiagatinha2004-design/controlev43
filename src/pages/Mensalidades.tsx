@@ -40,13 +40,22 @@ const Mensalidades = () => {
     if (!isAdmin) return;
 
     const payment = getPaymentStatus(memberId, month);
-    if (!payment) return;
+    const member = members?.find((item) => item.id === memberId);
+    if (!member) return;
+    if (member.entry_month && (MONTH_INDEX[month] ?? 0) <= (MONTH_INDEX[member.entry_month] ?? 0)) return;
 
+    const currentStatus = payment?.status ?? "Pendente";
     const nextStatus: "Pago" | "Pendente" | "Deve" =
-      payment.status === "Pendente" ? "Pago" : payment.status === "Pago" ? "Deve" : "Pendente";
+      currentStatus === "Pendente" ? "Pago" : currentStatus === "Pago" ? "Deve" : "Pendente";
 
     try {
-      await updatePayment.mutateAsync({ id: payment.id, status: nextStatus });
+      await updatePayment.mutateAsync({
+        id: payment?.id,
+        member_id: memberId,
+        month,
+        year: selectedYear,
+        status: nextStatus,
+      });
       toast({
         title: "Atualizado!",
         description: `Status alterado para ${nextStatus}`,

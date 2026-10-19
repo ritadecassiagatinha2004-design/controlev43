@@ -275,11 +275,17 @@ export function useUpdatePayment() {
   const queryClient = useQueryClient();
   
   return useMutation({
-    mutationFn: async ({ id, status }: { id: string; status: "Pago" | "Pendente" | "Deve" }) => {
-      const { error } = await supabase
-        .from("payments")
-        .update({ status })
-        .eq("id", id);
+    mutationFn: async ({ id, member_id, month, year, status }: {
+      id?: string;
+      member_id: string;
+      month: string;
+      year: number;
+      status: "Pago" | "Pendente" | "Deve";
+    }) => {
+      const table = supabase.from("payments");
+      const { error } = id
+        ? await table.update({ status }).eq("id", id)
+        : await table.insert({ member_id, month, year, status });
       if (error) throw error;
     },
     onSuccess: () => {
