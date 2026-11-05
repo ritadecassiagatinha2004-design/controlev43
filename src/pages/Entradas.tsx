@@ -9,6 +9,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Pencil, Plus, Trash2, Save, X, ChevronDown, ChevronRight } from "lucide-react";
 import { useState, useMemo } from "react";
 import { useToast } from "@/hooks/use-toast";
+import { Textarea } from "@/components/ui/textarea";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { parseBRNumber } from "@/lib/number";
 
 const Entradas = () => {
   const { data: income, isLoading } = useIncome(2026);
@@ -33,7 +36,7 @@ const Entradas = () => {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editData, setEditData] = useState({ description: "", value: 0 });
   const [adding, setAdding] = useState(false);
-  const [newData, setNewData] = useState({ description: "", value: 0, month: "Janeiro" });
+  const [newData, setNewData] = useState({ description: "", value: 0, month: months[new Date().getMonth()] });
 
   // Group income by month
   const incomeByMonth = income?.reduce((acc, inc) => {
@@ -59,17 +62,31 @@ const Entradas = () => {
     }
   };
 
+  const [bulkText, setBulkText] = useState("");
+  const parseLine = (raw: string): { description: string; value: number } | null => {
+    const line = raw.trim();
+    if (!line) return null;
+    const m = line.match(/^(.+?)\s+([\d.]+(?:[ ,.]\d{1,2})?)\s*$/);
+    if (!m) return null;
+    const description = m[1].trim().replace(/[:\-–—]\s*$/, "");
+    const value = parseBRNumber(m[2].trim().replace(/\s+/, ","));
+    if (!(value > 0) || !description) return null;
+    return { description, value };
+  };
+  const lines = bulkText.split(/\r?\n/);
+  const parsedIncome = lines.map(parseLine).filter((x): x is { description: string; value: number } => x !== null);
+  const skippedLines = lines.filter((l) => l.trim().length > 0 && !parseLine(l));
+  const resetBulk = () => { setAdding(false); setBulkText(""); };
+
   const handleAdd = async () => {
+    if (parsedIncome.length === 0) {
+      toast({ title: "Nada para salvar", description: "Cole pelo menos uma linha válida (ex: 'Rifa 1.000,00')", variant: "destructive" });
+      return;
+    }
     try {
-      await addIncome.mutateAsync({
-        description: newData.description,
-        value: newData.value,
-        month: newData.month,
-        year: 2026,
-      });
-      setAdding(false);
-      setNewData({ description: "", value: 0, month: "Janeiro" });
-      toast({ title: "Adicionado!", description: "Nova entrada adicionada com sucesso" });
+      await Promise.all(parsedIncome.map((r) => addIncome.mutateAsync({ description: r.description, value: r.value, month: newData.month, year: 2026 })));
+      toast({ title: "Adicionadas!", description: `${parsedIncome.length} entrada(s) salva(s) em ${newData.month}` });
+      resetBulk();
     } catch (error) {
       toast({ title: "Erro", description: "Não foi possível adicionar", variant: "destructive" });
     }
@@ -128,63 +145,75 @@ const Entradas = () => {
               <p className="text-sm text-muted-foreground">Receitas mensais da casa</p>
             </div>
             {isAdmin && (
-              <Button onClick={() => setAdding(true)} className="w-full sm:w-auto">
+              <Button onClick={() => { setNewData((d) => ({ ...d, month: months[new Date().getMonth()] })); setAdding(true); }} className="w-full sm:w-auto">
                 <Plus className="w-4 h-4 mr-2" />
                 Nova Entrada
               </Button>
             )}
           </div>
 
-          {/* Add new income form */}
-          {adding && (
-            <Card className="mb-6 border-primary">
-              <CardContent className="p-6">
-                <h3 className="text-lg font-semibold mb-4">Adicionar Nova Entrada</h3>
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                  <div>
-                    <label className="text-sm text-muted-foreground">Mês</label>
-                    <Select value={newData.month} onValueChange={(v) => setNewData({ ...newData, month: v })}>
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {months.map((m) => (
-                          <SelectItem key={m} value={m}>{m}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div>
-                    <label className="text-sm text-muted-foreground">Descrição</label>
-                    <Input
-                      value={newData.description}
-                      onChange={(e) => setNewData({ ...newData, description: e.target.value })}
-                      placeholder="Descrição da entrada"
-                    />
-                  </div>
-                  <div>
-                    <label className="text-sm text-muted-foreground">Valor (R$)</label>
-                    <Input
-                      type="number"
-                      step="0.01"
-                      value={newData.value}
-                      onChange={(e) => setNewData({ ...newData, value: parseFloat(e.target.value) || 0 })}
-                    />
-                  </div>
+          <Dialog open={adding} onOpenChange={(open) => { if (!open) resetBulk(); }}>
+            <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+              <DialogHeader>
+                <DialogTitle>Adicionar Entradas</DialogTitle>
+              </DialogHeader>
+              <div className="mb-2 max-w-xs">
+                <label className="text-sm text-muted-foreground">Mês</label>
+                <Select value={newData.month} onValueChange={(v) => setNewData({ ...newData, month: v })}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    {months.map((m) => (<SelectItem key={m} value={m}>{m}</SelectItem>))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm text-muted-foreground">
+                  Cole sua lista (uma linha por entrada: <span className="font-mono text-xs">descrição valor</span>)
+                </label>
+                <Textarea
+                  value={bulkText}
+                  onChange={(e) => setBulkText(e.target.value)}
+                  placeholder={"Rifa 1.000,00\nFilhos festa 360,00\nDoação assist 605,00\nBaixa da aplicação 500,00"}
+                  rows={8}
+                  className="font-mono text-sm"
+                />
+                <p className="text-xs text-muted-foreground">
+                  Aceita formatos: <span className="font-mono">360,00</span>, <span className="font-mono">605 00</span>, <span className="font-mono">1.000 00</span>
+                </p>
+              </div>
+              {(parsedIncome.length > 0 || skippedLines.length > 0) && (
+                <div className="rounded-md border bg-muted/30 p-3 space-y-2">
+                  <p className="text-sm font-medium">
+                    Pré-visualização: {parsedIncome.length} entrada(s) reconhecida(s)
+                    {skippedLines.length > 0 && ` · ${skippedLines.length} linha(s) inválida(s)`}
+                  </p>
+                  {parsedIncome.length > 0 && (
+                    <div className="space-y-1 max-h-40 overflow-y-auto">
+                      {parsedIncome.map((p, i) => (
+                        <div key={i} className="flex justify-between text-sm">
+                          <span className="text-foreground">{p.description}</span>
+                          <span className="font-medium text-primary">{formatCurrency(p.value)}</span>
+                        </div>
+                      ))}
+                      <div className="flex justify-between text-sm font-semibold border-t pt-1">
+                        <span>Total</span>
+                        <span>{formatCurrency(parsedIncome.reduce((s, p) => s + p.value, 0))}</span>
+                      </div>
+                    </div>
+                  )}
+                  {skippedLines.length > 0 && (
+                    <div className="text-xs text-destructive">
+                      Ignoradas: {skippedLines.map((l) => `"${l.trim()}"`).join(", ")}
+                    </div>
+                  )}
                 </div>
-                <div className="flex justify-end gap-2 mt-4">
-                  <Button variant="outline" onClick={() => setAdding(false)}>
-                    <X className="w-4 h-4 mr-2" />
-                    Cancelar
-                  </Button>
-                  <Button onClick={handleAdd}>
-                    <Save className="w-4 h-4 mr-2" />
-                    Salvar
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          )}
+              )}
+              <DialogFooter className="mt-4">
+                <Button variant="outline" onClick={resetBulk}><X className="w-4 h-4 mr-2" />Cancelar</Button>
+                <Button onClick={handleAdd} disabled={addIncome.isPending}><Save className="w-4 h-4 mr-2" />Salvar todas</Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
 
           {/* Income by Month */}
           {monthsWithIncome.length === 0 ? (
